@@ -36,3 +36,12 @@ func (r *urlRepo) FindByCode(code string) (*domain.URL, error){
 
 	return &url, err
 }
+
+// FindByUserID retrieves all URLs which associated with UserID
+func (r *urlRepo) FindByUserID(id uint) ([]domain.URL, error){
+	var urls []domain.URL
+
+	err := r.db.Find([]domain.URL).Error
+
+	return urls,err
+}
