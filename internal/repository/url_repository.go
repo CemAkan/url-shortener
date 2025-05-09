@@ -1,6 +1,10 @@
 package repository
 
-import "github.com/CemAkan/url-shortener/internal/domain"
+import (
+	"github.com/CemAkan/url-shortener/config"
+	"github.com/CemAkan/url-shortener/internal/domain"
+	"gorm.io/gorm"
+)
 
 type URLRepository interface {
 	Create(*domain.URL) error
@@ -8,4 +12,14 @@ type URLRepository interface {
 	FindByUserID(id uint) ([]domain.URL, error)
 	Update(url *domain.URL) error
 	IncrementTotalClicks(code string) error
+}
+
+type urlRepo struct {
+	db *gorm.DB
+}
+
+func NewURLRepository() URLRepository {
+	return &urlRepo{
+		db: config.DB
+	}
 }
