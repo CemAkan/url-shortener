@@ -11,7 +11,7 @@ type URLRepository interface {
 	FindByCode(code string) (*domain.URL, error)
 	FindByUserID(id uint) ([]domain.URL, error)
 	Update(url *domain.URL) error
-	IncrementTotalClicks(code string) error
+	AddToTotalClicks(code string) error
 }
 
 type urlRepo struct {
