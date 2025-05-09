@@ -10,6 +10,7 @@ type UserRepository interface {
 	Create(user *domain.User) error
 	FindByID(id uint) (*domain.User, error)
 	FindByUsername(username string) (*domain.User, error)
+	Update(user *domain.User) error
 	ListAllUsers() ([]domain.User, error)
 }
 
@@ -36,11 +37,15 @@ func (r *userRepo)FindByID(id uint) (*domain.User, error){
 }
 
 // FindByUsername retrieves user by username
-
 func (r *userRepo) FindByUsername (username string)(*domain.User, error){
 	var user domain.User
 
 	err := r.db.Where("username=%s",username).First(&user).Error
 
 	return &user,err
+}
+
+// Update modifies to existing user
+func (r *userRepo) Update (user *domain.User)error{
+	return r.db.Save(user).Error
 }
