@@ -28,3 +28,11 @@ func NewURLRepository() URLRepository {
 func (r *urlRepo) Create (url *domain.URL)error{
 	return r.db.Create(url).Error
 }
+
+// FindByCode retrieves URL by short code
+func (r *urlRepo) FindByCode(code string) (*domain.URL, error){
+	var url domain.URL
+	err := r.db.Where("code = ?",code).First(&url).Error
+
+	return &url, err
+}
