@@ -45,3 +45,8 @@ func (r *urlRepo) FindByUserID(id uint) ([]domain.URL, error){
 
 	return urls,err
 }
+
+// Update modifies to existing url
+func (r *urlRepo)Update(url *domain.URL)error  {
+	return r.db.Save(url).Error
+}
