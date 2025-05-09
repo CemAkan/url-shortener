@@ -23,6 +23,14 @@ func NewUserRepository() UserRepository {
 }
 }
 
+// Create inserts new user
 func (r *userRepo) Create (user *domain.User) error{
 	return r.db.Create(user).Error
+}
+
+// FindByID retrieves user by ID
+func (r *userRepo)FindByID(id uint) (*domain.User, error){
+	var user domain.User
+	err := r.db.First(&user,id).Error
+		return &user, err
 }
