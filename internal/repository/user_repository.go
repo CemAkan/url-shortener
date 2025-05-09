@@ -34,3 +34,13 @@ func (r *userRepo)FindByID(id uint) (*domain.User, error){
 	err := r.db.First(&user,id).Error
 		return &user, err
 }
+
+// FindByUsername retrieves user by username
+
+func (r *userRepo) FindByUsername (username string)(*domain.User, error){
+	var user domain.User
+
+	err := r.db.Where("username=%s",username).First(&user).Error
+
+	return &user,err
+}
