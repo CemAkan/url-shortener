@@ -40,7 +40,7 @@ func (r *userRepo) FindByID(id uint) (*domain.User, error) {
 func (r *userRepo) FindByUsername(username string) (*domain.User, error) {
 	var user domain.User
 
-	err := r.db.Where("username=%s", username).First(&user).Error
+	err := r.db.Where("username = ?", username).First(&user).Error
 
 	return &user, err
 }
