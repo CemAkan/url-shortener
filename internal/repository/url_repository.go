@@ -23,3 +23,8 @@ func NewURLRepository() URLRepository {
 		db: config.DB
 	}
 }
+
+// Create inserts new url
+func (r *urlRepo) Create (url *domain.URL)error{
+	return r.db.Create(url).Error
+}
