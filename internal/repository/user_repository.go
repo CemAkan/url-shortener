@@ -49,3 +49,12 @@ func (r *userRepo) FindByUsername (username string)(*domain.User, error){
 func (r *userRepo) Update (user *domain.User)error{
 	return r.db.Save(user).Error
 }
+
+// ListAllUsers retrieves all user records
+func (r *userRepo) ListAllUsers() ([]domain.User, error){
+	var users []domain.User
+
+	err := r.db.Find(&users).Error
+
+	return users,err
+}
