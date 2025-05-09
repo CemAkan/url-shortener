@@ -11,7 +11,7 @@ type URLRepository interface {
 	FindByCode(code string) (*domain.URL, error)
 	FindByUserID(id uint) ([]domain.URL, error)
 	Update(url *domain.URL) error
-	AddToTotalClicks(code string) error
+	AddToTotalClicks(code string, count int) error
 }
 
 type urlRepo struct {
@@ -20,7 +20,7 @@ type urlRepo struct {
 
 func NewURLRepository() URLRepository {
 	return &urlRepo{
-		db: config.DB
+		db: config.DB,
 	}
 }
 
@@ -50,3 +50,4 @@ func (r *urlRepo) FindByUserID(id uint) ([]domain.URL, error){
 func (r *urlRepo)Update(url *domain.URL)error  {
 	return r.db.Save(url).Error
 }
+
