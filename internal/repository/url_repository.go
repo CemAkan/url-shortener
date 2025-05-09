@@ -50,3 +50,8 @@ func (r *urlRepo) FindByUserID(id uint) ([]domain.URL, error) {
 func (r *urlRepo) Update(url *domain.URL) error {
 	return r.db.Save(url).Error
 }
+
+// AddToTotalClicks adds wanted click count to total clicks
+func (r *urlRepo) AddToTotalClicks(code string, count int) error {
+	return r.db.Model(&domain.URL{}).Where("code = ?", code).UpdateColumn("total_clicks", gorm.Expr("total_clicks + ?", count)).Error
+}
