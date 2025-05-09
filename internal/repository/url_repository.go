@@ -25,29 +25,28 @@ func NewURLRepository() URLRepository {
 }
 
 // Create inserts new url
-func (r *urlRepo) Create (url *domain.URL)error{
+func (r *urlRepo) Create(url *domain.URL) error {
 	return r.db.Create(url).Error
 }
 
 // FindByCode retrieves URL by short code
-func (r *urlRepo) FindByCode(code string) (*domain.URL, error){
+func (r *urlRepo) FindByCode(code string) (*domain.URL, error) {
 	var url domain.URL
-	err := r.db.Where("code = ?",code).First(&url).Error
+	err := r.db.Where("code = ?", code).First(&url).Error
 
 	return &url, err
 }
 
 // FindByUserID retrieves all URLs which associated with UserID
-func (r *urlRepo) FindByUserID(id uint) ([]domain.URL, error){
+func (r *urlRepo) FindByUserID(id uint) ([]domain.URL, error) {
 	var urls []domain.URL
 
-	err := r.db.Find([]domain.URL).Error
+	err := r.db.Find(&urls).Error
 
-	return urls,err
+	return urls, err
 }
 
 // Update modifies to existing url
-func (r *urlRepo)Update(url *domain.URL)error  {
+func (r *urlRepo) Update(url *domain.URL) error {
 	return r.db.Save(url).Error
 }
-
