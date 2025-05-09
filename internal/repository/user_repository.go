@@ -21,3 +21,8 @@ func NewUserRepository() UserRepository {
 	return &userRepo{
 		db: config.DB
 }
+}
+
+func (r *userRepo) Create (user *domain.User) error{
+	return r.db.Create(user).Error
+}
