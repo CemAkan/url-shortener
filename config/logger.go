@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/sirupsen/logrus"
+	"io"
 	"os"
 	"time"
 )
@@ -9,8 +10,22 @@ import (
 var Log = logrus.New()
 
 func InitLogger() {
-	//first output target
-	Log.SetOutput(os.Stdout)
+
+	//logs folder checker & creator
+	if _, err := os.Stat("logs"); os.IsNotExist(err) {
+		_ = os.Mkdir("logs", 0775)
+	}
+
+	// app.log file opener and creator if it not exist
+	file, err := os.OpenFile("logs/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+
+	if err != nil {
+		Log.Warn("failed to open log file, defaulting open stdout only")
+		Log.SetOutput(os.Stdout)
+	} else {
+		Log.SetOutput(io.MultiWriter(file, os.Stdout))
+	}
+
 	Log.SetLevel(logrus.InfoLevel)
 
 	//formatter
@@ -20,8 +35,4 @@ func InitLogger() {
 		ForceColors:     true,
 	})
 
-	//logs folder checker & creator
-	if _, err := os.Stat("logs"); os.IsNotExist(err) {
-		_ = os.Mkdir("logs", 0775)
-	}
 }
