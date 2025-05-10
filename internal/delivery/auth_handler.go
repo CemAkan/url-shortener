@@ -61,3 +61,24 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		"username": user.Username,
 	})
 }
+
+// Me returns authenticated user's data
+func (h *AuthHandler) Me(c *fiber.Ctx) error {
+	// getting userId which comes from middleware
+	id := c.Locals("user_id").(uint)
+
+	//user existence check
+
+	user, err := h.service.GetByID(id)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "User not found"})
+	}
+
+	// success return with user's data
+	return c.JSON(fiber.Map{
+		"id":       user.ID,
+		"username": user.Username,
+		"domain":   user.Domain,
+	})
+}
