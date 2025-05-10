@@ -38,13 +38,16 @@ func JWTAuth() fiber.Handler {
 
 		// userID claim
 
-		userId, ok := claims["user_id"].(float64)
+		userID, ok := claims["user_id"].(float64)
 
 		if !ok {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Invalid token user ID",
 			})
 		}
+
+		c.Locals("user_id", uint(userID))
+		return c.Next()
 
 		return c.Next()
 	}
