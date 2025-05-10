@@ -1,10 +1,17 @@
 package delivery
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/CemAkan/url-shortener/internal/middleware"
+	"github.com/gofiber/fiber/v2"
+)
 
 func SetupRoutes(app *fiber.App, authHandler *AuthHandler) {
-	app.Group("/api")
+	api := app.Group("/api")
 
-	app.Post("/register", authHandler.Register)
-	app.Post("/login", authHandler.Login)
+	// public routes (no need jwt)
+	api.Post("/register", authHandler.Register)
+	api.Post("/login", authHandler.Login)
+
+	// protected routes (jwt required)
+	api.Get("/me", middleware.JWTAuth(), authHandler.Me)
 }
