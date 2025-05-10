@@ -17,17 +17,19 @@ func JWTAuth() fiber.Handler {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Missing or invalid Authorization header"})
 		}
 
-		//Token check
-		tokenStr := strings.TrimPrefix(authHeader, " Bearer ")
+		// Trimming
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		tokenStr = strings.TrimSpace(tokenStr)
 
+		// Token check
 		token, err := config.ValidateJWT(tokenStr)
 
 		if err != nil || !token.Valid {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid or expired token"})
+
 		}
 
 		// map data claim
-
 		claims, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok {
