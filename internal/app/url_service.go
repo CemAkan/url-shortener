@@ -60,3 +60,13 @@ func (s *urlService) Shorten(originalURL string, userID uint, customCode *string
 	return url, nil
 
 }
+
+// GetByCode finds url record with code parameter
+func (s *urlService) GetByCode(code string) (*domain.URL, error) {
+	return s.repo.FindByCode(code)
+}
+
+// GetUserURLs finds all userID related url records
+func (s *urlService) GetUserURLs(userID uint) ([]domain.URL, error) {
+	return s.repo.FindByUserID(userID)
+}
