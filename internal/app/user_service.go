@@ -49,3 +49,19 @@ func (s *userService) Register(username, password string) (*domain.User, error) 
 	return user, nil
 
 }
+
+// Login checks username existence and its related password's correctness
+func (s *userService) Login(username, password string) (*domain.User, error) {
+
+	user, err := s.repo.FindByUsername(username)
+
+	if err != nil {
+		return nil, errors.New("invalid username or password")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return nil, errors.New("invalid username or password")
+	}
+
+	return user, nil
+}
