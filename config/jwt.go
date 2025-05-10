@@ -19,3 +19,14 @@ func GenerateJWT(userID string) (string, error) {
 	return token.SignedString(jwtSecret)
 
 }
+
+// GenerateJWT parses and verifies signed tokens
+func ValidateJWT(token string) (*jwt.Token, error) {
+	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		// signature method checking
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtSecret, nil
+	})
+}
