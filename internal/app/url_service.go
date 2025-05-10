@@ -6,7 +6,7 @@ import (
 )
 
 type URLService interface {
-	Shorten(originalURL string, userID uint) (*domain.URL, error)
+	Shorten(originalURL string, userID uint, customCode *string) (*domain.URL, error)
 	GetByCode(code string) (*domain.URL, error)
 	GetByUserID(userID uint) ([]domain.URL, error)
 }
