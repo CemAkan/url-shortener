@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/app"
 	"github.com/gofiber/fiber/v2"
 )
@@ -56,7 +57,14 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	// generate jwt token
+	token, err := config.GenerateJWT(user.ID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate token"})
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"token":    token,
 		"id":       user.ID,
 		"username": user.Username,
 	})
