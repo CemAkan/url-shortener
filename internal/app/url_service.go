@@ -10,7 +10,7 @@ import (
 type URLService interface {
 	Shorten(originalURL string, userID uint, customCode *string) (*domain.URL, error)
 	GetByCode(code string) (*domain.URL, error)
-	GetByUserID(userID uint) ([]domain.URL, error)
+	GetUserURLs(userID uint) ([]domain.URL, error)
 }
 
 type urlService struct {
@@ -18,7 +18,7 @@ type urlService struct {
 }
 
 func NewURLService(urlRepo repository.URLRepository) URLService {
-	return &userService{
+	return &urlService{
 		repo: urlRepo,
 	}
 }
