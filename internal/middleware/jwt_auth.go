@@ -47,8 +47,8 @@ func JWTAuth() fiber.Handler {
 		}
 
 		c.Locals("user_id", uint(userID))
-		return c.Next()
 
 		return c.Next()
+
 	}
 }
