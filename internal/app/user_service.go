@@ -10,6 +10,7 @@ import (
 type UserService interface {
 	Register(username, password string) (*domain.User, error)
 	Login(username, password string) (*domain.User, error)
+	GetByID(id uint) (*domain.User, error)
 }
 
 type userService struct {
@@ -64,4 +65,8 @@ func (s *userService) Login(username, password string) (*domain.User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *userService) GetByID(id uint) (*domain.User, error) {
+	return s.repo.FindByID(id)
 }
