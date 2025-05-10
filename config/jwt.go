@@ -8,7 +8,7 @@ import (
 var jwtSecret = []byte(GetEnv("JWT_SECRET", "default_jwt_secret123!@#"))
 
 // GenerateJWT creates signed token with user ID and 24h expiration
-func GenerateJWT(userID string) (string, error) {
+func GenerateJWT(userID uint) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     time.Now().Add(24 * time.Hour).Unix(),
