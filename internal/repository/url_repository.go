@@ -41,7 +41,7 @@ func (r *urlRepo) FindByCode(code string) (*domain.URL, error) {
 func (r *urlRepo) FindByUserID(id uint) ([]domain.URL, error) {
 	var urls []domain.URL
 
-	err := r.db.Find(&urls).Error
+	err := r.db.Where("user_id = ?", id).Find(&urls).Error
 
 	return urls, err
 }

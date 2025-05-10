@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/CemAkan/url-shortener/internal/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -22,4 +23,10 @@ func InitDB() {
 
 	DB = db
 	Log.Info("Database connection established successfully")
+
+	//Auto Migration
+	err = DB.AutoMigrate(&domain.User{})
+	if err != nil {
+		Log.Fatal("❌ DB AutoMigrate failed: ", err)
+	}
 }
