@@ -7,6 +7,8 @@ import (
 	"github.com/CemAkan/url-shortener/internal/domain"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/internal/utils"
+	"strconv"
+	"time"
 )
 
 type URLService interface {
@@ -75,6 +77,7 @@ func (s *urlService) GetUserURLs(userID uint) ([]domain.URL, error) {
 
 }
 
+// GetSingleUrlRecord find a url record with its daily click rate
 func (s *urlService) GetSingleUrlRecord(code string, userID uint) (*domain.URL, int, error) {
 	url, err := s.repo.FindByCode(code)
 	if err != nil || url == nil {
@@ -89,4 +92,38 @@ func (s *urlService) GetSingleUrlRecord(code string, userID uint) (*domain.URL, 
 	dailyClicks, _ := config.Redis.Get(context.Background(), clickKey).Int()
 
 	return url, dailyClicks, nil
+}
+
+// ResolveRedirect translates given short code to original code with cache-db mechanism
+func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, error) {
+
+	//look at redis to find cache record
+	cacheKey := "code_cache:" + code
+	if originalURL, err := config.Redis.Get(ctx, cacheKey).Result(); err == nil && originalURL != "" {
+		return originalURL, nil
+	}
+
+	//get daily click
+	dailyClicks, _ := utils.GetDailyClickCount(ctx, code)
+
+	//look at db to find original record
+	url, err := s.repo.FindByCode(code)
+	if err != nil || url == nil {
+		return "", errors.New("not found")
+	}
+
+	//getting threshold from .env and transfer it to integer
+	thresholdENVString := config.GetEnv("DAILY_CLICK_CACHE_THRESHOLD", "100")
+	threshold, _ := strconv.Atoi(thresholdENVString)
+
+	// db -> redis resolve redirect mechanism for hot links
+	if dailyClicks >= threshold {
+		if err := config.Redis.Set(ctx, cacheKey, url.OriginalURL, 24*time.Hour).Err(); err != nil {
+			config.Log.Printf("Redis cache save error: %v", err.Error())
+		}
+
+	}
+
+	return url.OriginalURL, nil
+
 }
