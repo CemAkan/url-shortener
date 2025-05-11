@@ -25,8 +25,8 @@ func InitDB() {
 	Log.Info("Database connection established successfully")
 
 	//Auto Migration
-	err = DB.AutoMigrate(&domain.User{})
+	err = DB.AutoMigrate(&domain.User{}, &domain.URL{})
 	if err != nil {
-		Log.Fatal("❌ DB AutoMigrate failed: ", err)
+		Log.Fatal("DB AutoMigrate failed: ", err)
 	}
 }
