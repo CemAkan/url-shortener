@@ -19,3 +19,9 @@ func TrackClick(ctx context.Context, code string) {
 	pipe.Expire(ctx, key, time.Hour*24)
 	_, _ = pipe.Exec(ctx)
 }
+
+// GetDailyClickCount gets url click counter from redis
+func GetDailyClickCount(ctx context.Context, code string) (int, error) {
+	key := fmt.Sprintf("clicks:%s", code)
+	return config.Redis.Get(ctx, key).Int()
+}
