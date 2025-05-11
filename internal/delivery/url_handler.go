@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"github.com/CemAkan/url-shortener/internal/app"
+	"github.com/CemAkan/url-shortener/internal/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -70,4 +71,21 @@ func (h *URLHandler) GetSingleURL(c *fiber.Ctx) error {
 		"total_clicks": url.TotalClicks,
 		"daily_clicks": dailyClicks,
 	})
+}
+
+// Redirect redirects short links to original links
+func (h *URLHandler) Redirect(c *fiber.Ctx) error {
+	code := c.Params("code")
+	ctx := c.Context()
+
+	//code resolving
+	originalURL, err := h.service.ResolveRedirect(ctx, code)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Short URL not found"})
+	}
+
+	//daily click increment
+	go utils.TrackClick(ctx, code)
+
+	return c.Redirect(originalURL, fiber.StatusFound)
 }
