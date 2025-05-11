@@ -10,6 +10,9 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 
 	// public routes (no need jwt)
 
+	//redirect
+	app.Get("/:code", urlHandler.Redirect)
+
 	//user
 	api.Post("/register", authHandler.Register)
 	api.Post("/login", authHandler.Login)
