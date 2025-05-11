@@ -53,3 +53,21 @@ func (h *URLHandler) ListUserURLs(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusCreated).JSON(urls)
 }
+
+// GetSingleURL handles request to list a single url details with daily click info
+func (h *URLHandler) GetSingleURL(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(uint)
+	code := c.Params("code")
+
+	url, dailyClicks, err := h.service.GetSingleUrlRecord(code, userID)
+	if err != nil || url == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "not found"})
+	}
+
+	return c.Status(fiber.StatusFound).JSON(fiber.Map{
+		"code":         url.Code,
+		"original_url": url.OriginalURL,
+		"total_clicks": url.TotalClicks,
+		"daily_clicks": dailyClicks,
+	})
+}
