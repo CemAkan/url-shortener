@@ -12,6 +12,7 @@ type UserRepository interface {
 	FindByUsername(username string) (*domain.User, error)
 	Update(user *domain.User) error
 	ListAllUsers() ([]domain.User, error)
+	GetByID(id uint) (*domain.User, error)
 }
 
 type userRepo struct {
@@ -57,4 +58,11 @@ func (r *userRepo) ListAllUsers() ([]domain.User, error) {
 	err := r.db.Find(&users).Error
 
 	return users, err
+}
+
+// GetByID fund user record with id parameter
+func (r *userRepo) GetByID(id uint) (*domain.User, error) {
+	var user domain.User
+	err := r.db.First(&user, id).Error
+	return &user, err
 }
