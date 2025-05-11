@@ -10,7 +10,7 @@ type URLHandler struct {
 	service app.URLService
 }
 
-func NewURLService(urlService app.URLService) *URLHandler {
+func NewURLHandler(urlService app.URLService) *URLHandler {
 	return &URLHandler{
 		service: urlService,
 	}
