@@ -87,6 +87,5 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"id":       user.ID,
 		"username": user.Username,
-		"domain":   user.Domain,
 	})
 }
