@@ -1,16 +1,19 @@
 package app
 
 import (
+	"context"
 	"errors"
+	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain"
 	"github.com/CemAkan/url-shortener/internal/repository"
-	"github.com/CemAkan/url-shortener/utils"
+	"github.com/CemAkan/url-shortener/internal/utils"
 )
 
 type URLService interface {
 	Shorten(originalURL string, userID uint, customCode *string) (*domain.URL, error)
 	GetByCode(code string) (*domain.URL, error)
 	GetUserURLs(userID uint) ([]domain.URL, error)
+	GetSingleUrlRecord(code string, userID uint) (*domain.URL, int, error)
 }
 
 type urlService struct {
@@ -69,4 +72,21 @@ func (s *urlService) GetByCode(code string) (*domain.URL, error) {
 // GetUserURLs finds all userID related url records
 func (s *urlService) GetUserURLs(userID uint) ([]domain.URL, error) {
 	return s.repo.FindByUserID(userID)
+
+}
+
+func (s *urlService) GetSingleUrlRecord(code string, userID uint) (*domain.URL, int, error) {
+	url, err := s.repo.FindByCode(code)
+	if err != nil || url == nil {
+		return nil, 0, err
+	}
+	if url.UserID != userID {
+		return nil, 0, errors.New("unauthorized access")
+	}
+
+	// getting daily click rate from redis
+	clickKey := "clicks:" + code
+	dailyClicks, _ := config.Redis.Get(context.Background(), clickKey).Int()
+
+	return url, dailyClicks, nil
 }
