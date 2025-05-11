@@ -12,6 +12,7 @@ type URLRepository interface {
 	FindByUserID(id uint) ([]domain.URL, error)
 	Update(url *domain.URL) error
 	AddToTotalClicks(code string, count int) error
+	Delete(code string) error
 }
 
 type urlRepo struct {
@@ -54,4 +55,12 @@ func (r *urlRepo) Update(url *domain.URL) error {
 // AddToTotalClicks adds wanted click count to total clicks
 func (r *urlRepo) AddToTotalClicks(code string, count int) error {
 	return r.db.Model(&domain.URL{}).Where("code = ?", code).UpdateColumn("total_clicks", gorm.Expr("total_clicks + ?", count)).Error
+}
+
+// Delete removes code related url record from database
+func (r *urlRepo) Delete(code string) error {
+	if err := r.db.Where("code= ?", code).Delete(domain.URL{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
