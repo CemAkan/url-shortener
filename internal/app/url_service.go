@@ -16,6 +16,7 @@ type URLService interface {
 	GetByCode(code string) (*domain.URL, error)
 	GetUserURLs(userID uint) ([]domain.URL, error)
 	GetSingleUrlRecord(code string, userID uint) (*domain.URL, int, error)
+	ResolveRedirect(ctx context.Context, code string) (string, error)
 }
 
 type urlService struct {
