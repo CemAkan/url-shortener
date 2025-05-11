@@ -41,6 +41,7 @@ func (s *userService) Register(username, password string) (*domain.User, error) 
 	user := &domain.User{
 		Username: username,
 		Password: string(hashedPassword),
+		IsAdmin:  false, // admin role can not get outside
 	}
 
 	if err := s.repo.Create(user); err != nil {
