@@ -5,18 +5,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type URLhandler struct {
+type URLHandler struct {
 	service app.URLService
 }
 
-func NewURLService(urlService app.URLService) *URLhandler {
-	return &URLhandler{
+func NewURLService(urlService app.URLService) *URLHandler {
+	return &URLHandler{
 		service: urlService,
 	}
 }
 
 // Shorten handles request to create short url
-func (h *URLhandler) Shorten(c *fiber.Ctx) error {
+func (h *URLHandler) Shorten(c *fiber.Ctx) error {
 	var req struct {
 		OriginalURL string  `json:"original_url"`
 		CustomCode  *string `json:"custom_code,omitempty"`
@@ -42,7 +42,7 @@ func (h *URLhandler) Shorten(c *fiber.Ctx) error {
 }
 
 // ListUserURLs handles request to list user's all urls
-func (h *URLhandler) ListUserURLs(c *fiber.Ctx) error {
+func (h *URLHandler) ListUserURLs(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
 	urls, err := h.service.GetUserURLs(userID)

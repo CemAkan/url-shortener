@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLhandler) {
+func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandler) {
 	api := app.Group("/api")
 
 	// public routes (no need jwt)
