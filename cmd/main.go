@@ -19,12 +19,19 @@ func main() {
 	app := fiber.New()
 
 	// Dependency injection
+
+	//user
 	userRepo := repository.NewUserRepository()
 	userService := appModule.NewUserService(userRepo)
 	userHandler := delivery.NewAuthHandler(userService)
 
+	//url
+	urlRepo := repository.NewURLRepository()
+	urlService := appModule.NewURLService(urlRepo)
+	urlHandler := delivery.NewURLHandler(urlService)
+
 	// Routes
-	delivery.SetupRoutes(app, userHandler)
+	delivery.SetupRoutes(app, userHandler, urlHandler)
 
 	// Middlewares
 	app.Use(middleware.RequestLogger())
