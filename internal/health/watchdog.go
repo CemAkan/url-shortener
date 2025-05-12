@@ -12,47 +12,55 @@ const (
 	MaxFailures         = 3
 )
 
-func StartWatchdog(shutdownFunc func()) {
-	config.Log.Info("Health watchdog started")
-
-	failures := 0
+// StartWatchdog monitors DB & Redis health and cancels ctx when threshold exceeded
+func StartWatchdog(ctx context.Context, cancel context.CancelFunc) {
 	ticker := time.NewTicker(HealthCheckInterval)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		healthy := true
+	failures := 0
 
-		// DB Health
-		sqlDB, err := config.DB.DB()
-		if err != nil {
-			config.Log.WithError(err).Error("DB handle retrieval failed")
-			healthy = false
-		} else if err = sqlDB.Ping(); err != nil {
-			config.Log.WithError(err).Error("Database ping failed")
-			healthy = false
-		}
+	config.Log.Info("Health Watchdog started")
 
-		// Redis Health
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		if err := config.Redis.Ping(ctx).Err(); err != nil {
-			config.Log.WithError(err).Error("Redis ping failed")
-			healthy = false
-		}
-		cancel()
+	for {
+		select {
+		case <-ctx.Done():
+			config.Log.Info("Watchdog context cancelled, stopping health checks")
+			return
 
-		if healthy {
-			failures = 0
-			config.Log.Info("Healthcheck passed: DB & Redis OK")
-			continue
-		}
-
-		failures++
-		config.Log.Warnf("Healthcheck failed (%d/%d)", failures, MaxFailures)
-
-		if failures >= MaxFailures {
-			config.Log.Error("Healthcheck failure threshold reached. Triggering shutdown.")
-			shutdownFunc()
-			break
+		case <-ticker.C:
+			if !checkHealth(ctx) {
+				failures++
+				config.Log.Warnf("Healthcheck failed (%d/%d)", failures, MaxFailures)
+				if failures >= MaxFailures {
+					config.Log.Error("Failure threshold reached. Triggering shutdown via context cancel")
+					cancel()
+					return
+				}
+			} else {
+				failures = 0
+				config.Log.Info("Healthcheck passed: DB & Redis OK")
+			}
 		}
 	}
+}
+
+func checkHealth(ctx context.Context) bool {
+	healthy := true
+
+	// db health check
+	sqlDB, err := config.DB.DB()
+	if err != nil || sqlDB.PingContext(ctx) != nil {
+		config.Log.WithError(err).Error("Database healthcheck failed")
+		healthy = false
+	}
+
+	//redis health check
+	rCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	if err := config.Redis.Ping(rCtx).Err(); err != nil {
+		config.Log.WithError(err).Error("Redis healthcheck failed")
+		healthy = false
+	}
+
+	return healthy
 }
