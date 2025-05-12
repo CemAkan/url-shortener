@@ -35,10 +35,8 @@ func (s *urlService) Shorten(originalURL string, userID uint, customCode *string
 	var code string
 
 	if customCode != nil && *customCode != "" {
-		isTaken, err := s.isCodeTaken(*customCode)
-		if err != nil {
-			return nil, err
-		}
+		isTaken := s.isCodeTaken(*customCode)
+
 		if isTaken {
 			return nil, errors.New("custom code already taken")
 		}
@@ -60,12 +58,14 @@ func (s *urlService) Shorten(originalURL string, userID uint, customCode *string
 	return url, nil
 }
 
-func (s *urlService) isCodeTaken(code string) (bool, error) {
-	existing, err := s.repo.FindByCode(code)
-	if err != nil {
-		return false, err
+func (s *urlService) isCodeTaken(code string) bool {
+	existing, _ := s.repo.FindByCode(code)
+
+	if existing != nil && existing.ID != 0 {
+		return true
 	}
-	return existing != nil && existing.ID != 0, nil
+
+	return false
 }
 
 func (s *urlService) generateUniqueCode() string {
@@ -134,6 +134,7 @@ func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, 
 
 // UpdateUserURL updates specific code record values
 func (s *urlService) UpdateUserURL(userID uint, oldCode string, newOriginalURL, newCode *string) error {
+
 	url, err := s.repo.FindByCode(oldCode)
 	if err != nil {
 		return errors.New("url not found")
@@ -145,10 +146,8 @@ func (s *urlService) UpdateUserURL(userID uint, oldCode string, newOriginalURL, 
 
 	// code update check
 	if newCode != nil && *newCode != "" && *newCode != url.Code {
-		isTaken, err := s.isCodeTaken(*newCode)
-		if err != nil {
-			return err
-		}
+		isTaken := s.isCodeTaken(*newCode)
+
 		if isTaken {
 			return errors.New("new custom code already taken")
 		}
