@@ -45,6 +45,6 @@ func (s *ClickFlusherService) FlushClicks() {
 			continue
 		}
 
-		infrastructure.Log.Infof("Flushed %d clicks for %s", count, code)
+		infrastructure.FlusherLog.Infof("Flushed %d clicks for %s", count, code)
 	}
 }

@@ -9,6 +9,7 @@ import (
 
 var Log = logrus.New()
 var ServerLogOutput io.Writer
+var FlusherLog = logrus.New()
 
 func InitLogger() {
 
@@ -18,13 +19,13 @@ func InitLogger() {
 	}
 
 	// app.log file opener and creator if it not exist
-	file, err := os.OpenFile("logs/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	appFile, err := os.OpenFile("logs/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 
 	if err != nil {
 		Log.Warn("failed to open log file, defaulting open stdout only")
 		Log.SetOutput(os.Stdout)
 	} else {
-		Log.SetOutput(io.MultiWriter(file, os.Stdout))
+		Log.SetOutput(io.MultiWriter(appFile, os.Stdout))
 	}
 
 	Log.SetLevel(logrus.InfoLevel)
@@ -39,9 +40,26 @@ func InitLogger() {
 	serverFile, err := os.OpenFile("logs/server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		Log.Warn("Failed to open server log file, use app log file")
-		ServerLogOutput = file
+		ServerLogOutput = appFile
 	} else {
 		ServerLogOutput = serverFile
 	}
+
+	flusherFile, err := os.OpenFile("logs/flusher.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		Log.Warn("Failed to open server log file, use app log file")
+		FlusherLog.SetOutput(appFile)
+	} else {
+		FlusherLog.SetOutput(flusherFile)
+	}
+
+	Log.SetLevel(logrus.InfoLevel)
+
+	//formatter
+	Log.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: time.RFC3339,
+		ForceColors:     false,
+	})
 
 }
