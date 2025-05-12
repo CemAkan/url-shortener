@@ -160,6 +160,10 @@ func (s *urlService) UpdateUserURL(userID uint, oldCode string, newOriginalURL, 
 	if newOriginalURL != nil && *newOriginalURL != "" && *newOriginalURL != url.OriginalURL {
 		url.OriginalURL = *newOriginalURL
 	}
+
+	// redis cache clean
+	utils.DeleteURLCache(oldCode)
+
 	return s.repo.Update(url)
 }
 
