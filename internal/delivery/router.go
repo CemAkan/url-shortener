@@ -24,4 +24,6 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 	api.Post("/shorten", middleware.JWTAuth(), urlHandler.Shorten)
 	api.Get("/my/urls", middleware.JWTAuth(), urlHandler.ListUserURLs)
 	api.Get("/my/urls/:code", middleware.JWTAuth(), urlHandler.GetSingleURL)
+	api.Delete("/my/urls/:code", middleware.JWTAuth(), urlHandler.DeleteURL)
+	api.Patch("/my/urls/:code", middleware.JWTAuth(), urlHandler.UpdateURL)
 }
