@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/CemAkan/url-shortener/config"
-	"github.com/CemAkan/url-shortener/internal/domain"
+	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/internal/utils"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure"
@@ -13,9 +13,9 @@ import (
 )
 
 type URLService interface {
-	Shorten(originalURL string, userID uint, customCode *string) (*domain.URL, error)
-	GetUserURLs(userID uint) ([]domain.URL, error)
-	GetSingleUrlRecord(code string) (*domain.URL, int, error)
+	Shorten(originalURL string, userID uint, customCode *string) (*model.URL, error)
+	GetUserURLs(userID uint) ([]model.URL, error)
+	GetSingleUrlRecord(code string) (*model.URL, int, error)
 	ResolveRedirect(ctx context.Context, code string) (string, error)
 	UpdateUserURL(userID uint, oldCode string, newOriginalURL, newCode *string) error
 	DeleteUserURL(userID uint, code string) error
@@ -33,7 +33,7 @@ func NewURLService(urlRepo repository.URLRepository) URLService {
 }
 
 // Shorten redeclare url address
-func (s *urlService) Shorten(originalURL string, userID uint, customCode *string) (*domain.URL, error) {
+func (s *urlService) Shorten(originalURL string, userID uint, customCode *string) (*model.URL, error) {
 	var code string
 
 	if customCode != nil && *customCode != "" {
@@ -47,7 +47,7 @@ func (s *urlService) Shorten(originalURL string, userID uint, customCode *string
 		code = s.generateUniqueCode()
 	}
 
-	url := &domain.URL{
+	url := &model.URL{
 		Code:        code,
 		OriginalURL: originalURL,
 		UserID:      userID,
@@ -81,13 +81,13 @@ func (s *urlService) generateUniqueCode() string {
 }
 
 // GetUserURLs finds all userID related url records
-func (s *urlService) GetUserURLs(userID uint) ([]domain.URL, error) {
+func (s *urlService) GetUserURLs(userID uint) ([]model.URL, error) {
 	return s.repo.FindByUserID(userID)
 
 }
 
 // GetSingleUrlRecord find url record with its daily click rate
-func (s *urlService) GetSingleUrlRecord(code string) (*domain.URL, int, error) {
+func (s *urlService) GetSingleUrlRecord(code string) (*model.URL, int, error) {
 	url, err := s.repo.FindByCode(code)
 	if err != nil || url == nil {
 		return nil, 0, err

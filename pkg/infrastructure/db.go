@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"fmt"
-	"github.com/CemAkan/url-shortener/internal/domain"
+	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
@@ -22,7 +22,7 @@ func InitDB() {
 	}
 
 	//auto migration
-	err = database.AutoMigrate(&domain.URL{}, &domain.User{})
+	err = database.AutoMigrate(&model.URL{}, &model.User{})
 
 	if err != nil {
 		Log.Fatalf("db connection error %v", err.Error())

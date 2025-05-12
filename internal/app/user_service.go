@@ -2,17 +2,17 @@ package app
 
 import (
 	"errors"
-	"github.com/CemAkan/url-shortener/internal/domain"
+	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
-	Register(username, password string) (*domain.User, error)
-	Login(username, password string) (*domain.User, error)
-	GetByID(id uint) (*domain.User, error)
+	Register(username, password string) (*model.User, error)
+	Login(username, password string) (*model.User, error)
+	GetByID(id uint) (*model.User, error)
 	DeleteUser(id uint) error
-	ListAllUsers() ([]domain.User, error)
+	ListAllUsers() ([]model.User, error)
 }
 
 type userService struct {
@@ -26,7 +26,7 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 }
 
 // Register checks username existence and save new user record to db with hashed password
-func (s *userService) Register(username, password string) (*domain.User, error) {
+func (s *userService) Register(username, password string) (*model.User, error) {
 	// username existence checking
 	existing, err := s.repo.FindByUsername(username)
 
@@ -40,7 +40,7 @@ func (s *userService) Register(username, password string) (*domain.User, error) 
 	if err != nil {
 		return nil, errors.New("password hashing failure")
 	}
-	user := &domain.User{
+	user := &model.User{
 		Username: username,
 		Password: string(hashedPassword),
 		IsAdmin:  false, // admin role can not get outside
@@ -55,7 +55,7 @@ func (s *userService) Register(username, password string) (*domain.User, error) 
 }
 
 // Login checks username existence and its related password's correctness
-func (s *userService) Login(username, password string) (*domain.User, error) {
+func (s *userService) Login(username, password string) (*model.User, error) {
 
 	user, err := s.repo.FindByUsername(username)
 
@@ -71,7 +71,7 @@ func (s *userService) Login(username, password string) (*domain.User, error) {
 }
 
 // GetByID return user with its id
-func (s *userService) GetByID(id uint) (*domain.User, error) {
+func (s *userService) GetByID(id uint) (*model.User, error) {
 	return s.repo.FindByID(id)
 }
 
@@ -92,6 +92,6 @@ func (s *userService) DeleteUser(id uint) error {
 }
 
 // ListAllUsers gets all user records
-func (s *userService) ListAllUsers() ([]domain.User, error) {
+func (s *userService) ListAllUsers() ([]model.User, error) {
 	return s.repo.ListAllUsers()
 }

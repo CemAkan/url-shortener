@@ -2,7 +2,7 @@ package delivery
 
 import (
 	"github.com/CemAkan/url-shortener/internal/app"
-	"github.com/CemAkan/url-shortener/internal/domain"
+	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 )
@@ -28,8 +28,8 @@ func (h *AdminHandler) ListUsers(c *fiber.Ctx) error {
 	}
 
 	type res struct {
-		User domain.User
-		Urls []domain.URL
+		User model.User
+		Urls []model.URL
 	}
 
 	var resp res

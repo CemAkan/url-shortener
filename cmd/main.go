@@ -1,3 +1,9 @@
+// @title URL Shortener API
+// @version 1.0
+// @description Enterprise grade URL shortening service.
+// @host localhost:3000
+// @BasePath /api
+
 package main
 
 import (
