@@ -13,9 +13,8 @@ import (
 
 type URLService interface {
 	Shorten(originalURL string, userID uint, customCode *string) (*domain.URL, error)
-	GetByCode(code string) (*domain.URL, error)
 	GetUserURLs(userID uint) ([]domain.URL, error)
-	GetSingleUrlRecord(code string, userID uint) (*domain.URL, int, error)
+	GetSingleUrlRecord(code string) (*domain.URL, int, error)
 	ResolveRedirect(ctx context.Context, code string) (string, error)
 	UpdateUserURL(userID uint, oldCode string, newOriginalURL, newCode *string) error
 }
@@ -78,25 +77,17 @@ func (s *urlService) generateUniqueCode() string {
 	}
 }
 
-// GetByCode finds url record with code parameter
-func (s *urlService) GetByCode(code string) (*domain.URL, error) {
-	return s.repo.FindByCode(code)
-}
-
 // GetUserURLs finds all userID related url records
 func (s *urlService) GetUserURLs(userID uint) ([]domain.URL, error) {
 	return s.repo.FindByUserID(userID)
 
 }
 
-// GetSingleUrlRecord find a url record with its daily click rate
-func (s *urlService) GetSingleUrlRecord(code string, userID uint) (*domain.URL, int, error) {
+// GetSingleUrlRecord find url record with its daily click rate
+func (s *urlService) GetSingleUrlRecord(code string) (*domain.URL, int, error) {
 	url, err := s.repo.FindByCode(code)
 	if err != nil || url == nil {
 		return nil, 0, err
-	}
-	if url.UserID != userID {
-		return nil, 0, errors.New("unauthorized access")
 	}
 
 	// getting daily click rate from redis
@@ -168,4 +159,17 @@ func (s *urlService) UpdateUserURL(userID uint, oldCode string, newOriginalURL, 
 		url.OriginalURL = *newOriginalURL
 	}
 	return s.repo.Update(url)
+}
+
+func (s *urlService) DeleteUserURL(userID uint, code string) error {
+	url, err := s.repo.FindByCode(code)
+	if err != nil {
+		return errors.New("url not found")
+	}
+
+	if url.UserID != userID {
+		return errors.New("unauthorized")
+	}
+
+	return s.repo.Delete(code)
 }
