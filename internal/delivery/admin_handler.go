@@ -4,6 +4,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/app"
 	"github.com/CemAkan/url-shortener/internal/domain"
 	"github.com/gofiber/fiber/v2"
+	"strconv"
 )
 
 type AdminHandler struct {
@@ -44,4 +45,22 @@ func (h *AdminHandler) ListUsers(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(resps)
+}
+
+// RemoveUser delete selected user record
+func (h *AdminHandler) RemoveUser(c *fiber.Ctx) error {
+
+	id, _ := strconv.Atoi(c.Params("id"))
+
+	userID := uint(id)
+
+	if err := h.urlService.DeleteUserAllURLs(userID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := h.userService.DeleteUser(userID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"Success": "Deleted successfully"})
 }
