@@ -11,6 +11,7 @@ type UserService interface {
 	Register(username, password string) (*domain.User, error)
 	Login(username, password string) (*domain.User, error)
 	GetByID(id uint) (*domain.User, error)
+	DeleteUser(id uint) error
 }
 
 type userService struct {
@@ -68,6 +69,23 @@ func (s *userService) Login(username, password string) (*domain.User, error) {
 	return user, nil
 }
 
+// GetByID return user with its id
 func (s *userService) GetByID(id uint) (*domain.User, error) {
 	return s.repo.FindByID(id)
+}
+
+// DeleteUser deletes user record
+func (s *userService) DeleteUser(id uint) error {
+	exist, _ := s.GetByID(id)
+	if exist == nil {
+		return errors.New("user not exist")
+	}
+
+	err := s.repo.Delete(id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
