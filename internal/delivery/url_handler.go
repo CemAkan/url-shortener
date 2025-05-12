@@ -89,7 +89,7 @@ func (h *URLHandler) Redirect(c *fiber.Ctx) error {
 	return c.Redirect(originalURL, fiber.StatusFound)
 }
 
-// DeleteURL redirect URL deleting request to service
+// DeleteURL handle URL delete requests
 func (h *URLHandler) DeleteURL(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 	code := c.Params("code")
@@ -99,4 +99,26 @@ func (h *URLHandler) DeleteURL(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"status": "deleted"})
+}
+
+// UpdateURL handle URL update requests
+func (h *URLHandler) UpdateURL(c *fiber.Ctx) error {
+	var req struct {
+		OriginalURL *string `json:"original_url,omitempty"`
+		CustomCode  *string `json:"custom_code,omitempty"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+	}
+
+	userID := c.Locals("user_id").(uint)
+	code := c.Params("code")
+
+	if err := h.service.UpdateUserURL(userID, code, req.OriginalURL, req.CustomCode); err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"status": "updated"})
+
 }
