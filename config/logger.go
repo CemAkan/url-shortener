@@ -8,6 +8,7 @@ import (
 )
 
 var Log = logrus.New()
+var ServerLogOutput io.Writer
 
 func InitLogger() {
 
@@ -32,7 +33,15 @@ func InitLogger() {
 	Log.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp:   true,
 		TimestampFormat: time.RFC3339,
-		ForceColors:     true,
+		ForceColors:     false,
 	})
+
+	serverFile, err := os.OpenFile("logs/server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		Log.Warn("Failed to open server log file, use app log file")
+		ServerLogOutput = file
+	} else {
+		ServerLogOutput = serverFile
+	}
 
 }
