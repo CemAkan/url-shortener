@@ -3,14 +3,14 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/CemAkan/url-shortener/config"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure"
 )
 
 // TrackClick increments short url redis click counter
 func TrackClick(ctx context.Context, code string) {
 	key := fmt.Sprintf("clicks:%s", code)
 
-	pipe := config.Redis.TxPipeline()
+	pipe := infrastructure.Redis.TxPipeline()
 
 	// increment
 	pipe.Incr(ctx, key)
@@ -21,5 +21,5 @@ func TrackClick(ctx context.Context, code string) {
 // GetDailyClickCount gets url click counter from redis
 func GetDailyClickCount(ctx context.Context, code string) (int, error) {
 	key := fmt.Sprintf("clicks:%s", code)
-	return config.Redis.Get(ctx, key).Int()
+	return infrastructure.Redis.Get(ctx, key).Int()
 }

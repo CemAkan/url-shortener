@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +22,7 @@ type urlRepo struct {
 
 func NewURLRepository() URLRepository {
 	return &urlRepo{
-		db: config.DB,
+		db: infrastructure.DB,
 	}
 }
 
