@@ -7,7 +7,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/domain"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/internal/utils"
-	infrastructure2 "github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure"
 	"strconv"
 	"time"
 )
@@ -94,7 +94,7 @@ func (s *urlService) GetSingleUrlRecord(code string) (*domain.URL, int, error) {
 
 	// getting daily click rate from redis
 	clickKey := "clicks:" + code
-	dailyClicks, _ := infrastructure2.Redis.Get(context.Background(), clickKey).Int()
+	dailyClicks, _ := infrastructure.Redis.Get(context.Background(), clickKey).Int()
 
 	return url, dailyClicks, nil
 }
@@ -104,7 +104,7 @@ func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, 
 
 	//look at redis to find cache record
 	cacheKey := "code_cache:" + code
-	if originalURL, err := infrastructure2.Redis.Get(ctx, cacheKey).Result(); err == nil && originalURL != "" {
+	if originalURL, err := infrastructure.Redis.Get(ctx, cacheKey).Result(); err == nil && originalURL != "" {
 		return originalURL, nil
 	}
 
@@ -123,8 +123,8 @@ func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, 
 
 	// db -> redis resolve redirect mechanism for hot links
 	if dailyClicks >= threshold {
-		if err := infrastructure2.Redis.Set(ctx, cacheKey, url.OriginalURL, 24*time.Hour).Err(); err != nil {
-			infrastructure2.Log.Printf("Redis cache save error: %v", err.Error())
+		if err := infrastructure.Redis.Set(ctx, cacheKey, url.OriginalURL, 24*time.Hour).Err(); err != nil {
+			infrastructure.Log.Printf("Redis cache save error: %v", err.Error())
 		}
 
 	}
@@ -171,6 +171,8 @@ func (s *urlService) DeleteUserURL(userID uint, code string) error {
 	if url.UserID != userID {
 		return errors.New("unauthorized")
 	}
+
+	utils.DeleteURLCache(code)
 
 	return s.repo.Delete(code)
 }
