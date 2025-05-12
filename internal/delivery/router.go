@@ -1,12 +1,22 @@
 package delivery
 
 import (
+	_ "github.com/CemAkan/url-shortener/docs"
 	"github.com/CemAkan/url-shortener/internal/middleware"
 	"github.com/gofiber/fiber/v2"
+	"github.com/swaggo/fiber-swagger"
 )
 
 func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandler, adminHandler *AdminHandler) {
 	api := app.Group("/api")
+
+	// Swagger UI Route
+	api.Get("/docs/*", fiberSwagger.WrapHandler)
+
+	// Favicon handler to prevent false URL lookups
+	app.Get("/favicon.ico", func(c *fiber.Ctx) error {
+		return c.SendStatus(fiber.StatusNoContent) // 204 No Content
+	})
 
 	// implement log middleware
 	app.Use(middleware.RequestLogger())
