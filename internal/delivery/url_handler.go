@@ -2,6 +2,8 @@ package delivery
 
 import (
 	"github.com/CemAkan/url-shortener/internal/app"
+	"github.com/CemAkan/url-shortener/internal/domain/request"
+	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/CemAkan/url-shortener/internal/utils"
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,13 +20,10 @@ func NewURLHandler(urlService app.URLService) *URLHandler {
 
 // Shorten handles request to create short url
 func (h *URLHandler) Shorten(c *fiber.Ctx) error {
-	var req struct {
-		OriginalURL string  `json:"original_url"`
-		CustomCode  *string `json:"custom_code,omitempty"`
-	}
+	var req request.ShortenURLRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid request"})
 	}
 
 	userID := c.Locals("user_id").(uint)
@@ -32,14 +31,13 @@ func (h *URLHandler) Shorten(c *fiber.Ctx) error {
 	url, err := h.service.Shorten(req.OriginalURL, userID, req.CustomCode)
 
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"code":         url.Code,
-		"original_url": req.OriginalURL,
-		"short_url":    c.BaseURL() + "/" + url.Code,
-	})
+	var res response.URLResponse
+	res.Code, res.OriginalURL, res.ShortURL = url.Code, url.OriginalURL, c.BaseURL()+"/"+url.Code
+
+	return c.Status(fiber.StatusCreated).JSON(res)
 }
 
 // ListUserURLs handles request to list user's all urls
@@ -49,7 +47,7 @@ func (h *URLHandler) ListUserURLs(c *fiber.Ctx) error {
 	urls, err := h.service.GetUserURLs(userID)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(urls)
@@ -61,15 +59,13 @@ func (h *URLHandler) GetSingleURL(c *fiber.Ctx) error {
 
 	url, dailyClicks, err := h.service.GetSingleUrlRecord(code)
 	if err != nil || url == nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "not found"})
+		return c.Status(fiber.StatusNotFound).JSON(response.ErrorResponse{Error: "not found"})
 	}
 
-	return c.Status(fiber.StatusFound).JSON(fiber.Map{
-		"code":         url.Code,
-		"original_url": url.OriginalURL,
-		"total_clicks": url.TotalClicks,
-		"daily_clicks": dailyClicks,
-	})
+	var res response.DetailedURLResponse
+	res.OriginalURL, res.Code, res.TotalClicks, res.DailyClicks = url.OriginalURL, url.Code, url.TotalClicks, dailyClicks
+
+	return c.Status(fiber.StatusFound).JSON(res)
 }
 
 // Redirect redirects short links to original links
@@ -80,7 +76,7 @@ func (h *URLHandler) Redirect(c *fiber.Ctx) error {
 	//code resolving
 	originalURL, err := h.service.ResolveRedirect(ctx, code)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Short URL not found"})
+		return c.Status(fiber.StatusNotFound).JSON(response.ErrorResponse{Error: "Short url not found"})
 	}
 
 	//daily click increment
@@ -95,30 +91,27 @@ func (h *URLHandler) DeleteURL(c *fiber.Ctx) error {
 	code := c.Params("code")
 
 	if err := h.service.DeleteUserURL(userID, code); err != nil {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusForbidden).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"status": "deleted"})
+	return c.JSON(response.SuccessResponse{Message: "user deleted successfully"})
 }
 
 // UpdateURL handle URL update requests
 func (h *URLHandler) UpdateURL(c *fiber.Ctx) error {
-	var req struct {
-		OriginalURL *string `json:"original_url,omitempty"`
-		CustomCode  *string `json:"custom_code,omitempty"`
-	}
+	var req request.UpdateURLRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid request"})
 	}
 
 	userID := c.Locals("user_id").(uint)
 	code := c.Params("code")
 
-	if err := h.service.UpdateUserURL(userID, code, req.OriginalURL, req.CustomCode); err != nil {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": err.Error()})
+	if err := h.service.UpdateUserURL(userID, code, req.NewOriginalURL, req.NewCustomCode); err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"status": "updated"})
+	return c.JSON(response.SuccessResponse{Message: "user updated successfully"})
 
 }
