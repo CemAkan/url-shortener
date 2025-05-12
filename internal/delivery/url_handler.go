@@ -57,10 +57,9 @@ func (h *URLHandler) ListUserURLs(c *fiber.Ctx) error {
 
 // GetSingleURL handles request to list a single url details with daily click info
 func (h *URLHandler) GetSingleURL(c *fiber.Ctx) error {
-	userID := c.Locals("user_id").(uint)
 	code := c.Params("code")
 
-	url, dailyClicks, err := h.service.GetSingleUrlRecord(code, userID)
+	url, dailyClicks, err := h.service.GetSingleUrlRecord(code)
 	if err != nil || url == nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "not found"})
 	}
@@ -88,4 +87,16 @@ func (h *URLHandler) Redirect(c *fiber.Ctx) error {
 	go utils.TrackClick(ctx, code)
 
 	return c.Redirect(originalURL, fiber.StatusFound)
+}
+
+// DeleteURL redirect URL deleting request to service
+func (h *URLHandler) DeleteURL(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(uint)
+	code := c.Params("code")
+
+	if err := h.service.DeleteUserURL(userID, code); err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"status": "deleted"})
 }
