@@ -1,5 +1,19 @@
-package main
+package system
 
-func main() {
+import (
+	"context"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"os"
+	"os/signal"
+	"syscall"
+)
 
+func HandleSignals(cancelFunc context.CancelFunc) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+
+	sig := <-sigs
+	infrastructure.Log.Infof("Received signal: %s", sig)
+
+	cancelFunc()
 }
