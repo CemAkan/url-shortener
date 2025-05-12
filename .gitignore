@@ -29,3 +29,14 @@ logs/
 
 # geetkepp
 *.gitkeep
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE/editor folders
+.idea/
+.vscode/
+
+# Go modules
+go.sum
