@@ -19,6 +19,7 @@ type URLService interface {
 	ResolveRedirect(ctx context.Context, code string) (string, error)
 	UpdateUserURL(userID uint, oldCode string, newOriginalURL, newCode *string) error
 	DeleteUserURL(userID uint, code string) error
+	DeleteUserAllURLs(userID uint) error
 }
 
 type urlService struct {
