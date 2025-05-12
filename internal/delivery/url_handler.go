@@ -95,7 +95,14 @@ func (h *URLHandler) GetSingleURL(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusFound).JSON(res)
 }
 
-// Redirect redirects short links to original links
+// Redirect godoc
+// @Summary Redirect short URL to original URL
+// @Description Redirects to original URL based on short code
+// @Tags URL
+// @Param code path string true "Short URL code"
+// @Success 302 {string} string "Redirects to original URL"
+// @Failure 404 {object} response.ErrorResponse
+// @Router /{code} [get]
 func (h *URLHandler) Redirect(c *fiber.Ctx) error {
 	code := c.Params("code")
 	ctx := c.Context()
