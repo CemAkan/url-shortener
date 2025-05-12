@@ -12,6 +12,7 @@ type UserService interface {
 	Login(username, password string) (*domain.User, error)
 	GetByID(id uint) (*domain.User, error)
 	DeleteUser(id uint) error
+	ListAllUsers() ([]domain.User, error)
 }
 
 type userService struct {
@@ -88,4 +89,9 @@ func (s *userService) DeleteUser(id uint) error {
 	}
 
 	return nil
+}
+
+// ListAllUsers gets all user records
+func (s *userService) ListAllUsers() ([]domain.User, error) {
+	return s.repo.ListAllUsers()
 }
