@@ -1,7 +1,8 @@
-package config
+package infrastructure
 
 import (
 	"context"
+	"github.com/CemAkan/url-shortener/config"
 	redis2 "github.com/redis/go-redis/v9"
 	"time"
 )
@@ -9,8 +10,8 @@ import (
 var Redis *redis2.Client
 
 func InitRedis() {
-	addr := GetEnv("REDIS_ADDR", "")
-	password := GetEnv("REDIS_PASSWORD", "")
+	addr := config.GetEnv("REDIS_ADDR", "")
+	password := config.GetEnv("REDIS_PASSWORD", "")
 
 	Redis = redis2.NewClient(&redis2.Options{
 		Addr:     addr,
