@@ -20,7 +20,15 @@ func NewAdminHandler(userService app.UserService, urlService app.URLService) *Ad
 	}
 }
 
-// ListUsers lists all users nad their links
+// ListUsers godoc
+// @Summary List all users and their URLs
+// @Description Retrieves all users with their associated short URLs
+// @Tags Admin
+// @Produce json
+// @Success 200 {array} response.UserURLsResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/users [get]
 func (h *AdminHandler) ListUsers(c *fiber.Ctx) error {
 	users, err := h.userService.ListAllUsers()
 	if err != nil {
@@ -41,7 +49,17 @@ func (h *AdminHandler) ListUsers(c *fiber.Ctx) error {
 	return c.JSON(resps)
 }
 
-// RemoveUser delete selected user record
+// RemoveUser godoc
+// @Summary Delete a user and all related URLs
+// @Description Deletes a user by ID and all associated short URLs & Redis entries
+// @Tags Admin
+// @Param id path int true "User ID"
+// @Produce json
+// @Success 200 {object} response.SuccessResponse
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/users/{id} [delete]
 func (h *AdminHandler) RemoveUser(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
