@@ -1,7 +1,5 @@
 package response
 
-package response
-
 type URLResponse struct {
 	Code        string `json:"code" example:"abc123"`
 	OriginalURL string `json:"original_url" example:"https://google.com"`
