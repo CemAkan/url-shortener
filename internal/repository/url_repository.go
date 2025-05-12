@@ -70,7 +70,7 @@ func (r *urlRepo) Delete(code string) error {
 func (r *urlRepo) DeleteUserAllUrls(id uint) ([]domain.URL, error) {
 	var urls []domain.URL
 	if err := r.db.Where("user_id= ?", id).Find(&urls).Delete(&domain.URL{}).Error; err != nil {
-		return err, nil
+		return nil, err
 	}
-	return nil, urls
+	return urls, nil
 }
