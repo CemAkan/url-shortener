@@ -24,7 +24,7 @@ func NewURLHandler(urlService app.URLService) *URLHandler {
 // @Tags URL
 // @Accept json
 // @Produce json
-// @Param body request.ShortenURLRequest true "URL to shorten"
+// @Param request body request.ShortenURLRequest true "URL to shorten"
 // @Success 201 {object} response.URLResponse
 // @Failure 400 {object} response.ErrorResponse
 // @Security BearerAuth
@@ -147,7 +147,7 @@ func (h *URLHandler) DeleteURL(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param code path string true "Short URL code"
-// @Param body request.UpdateURLRequest true "Updated URL info"
+// @Param request body request.UpdateURLRequest true "Updated URL info"
 // @Success 200 {object} response.SuccessResponse
 // @Failure 400 {object} response.ErrorResponse
 // @Failure 403 {object} response.ErrorResponse
