@@ -17,6 +17,7 @@ type URLService interface {
 	GetUserURLs(userID uint) ([]domain.URL, error)
 	GetSingleUrlRecord(code string, userID uint) (*domain.URL, int, error)
 	ResolveRedirect(ctx context.Context, code string) (string, error)
+	UpdateUserURL(userID uint, code, newOriginalURL string) error
 }
 
 type urlService struct {
@@ -137,4 +138,34 @@ func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, 
 
 	return url.OriginalURL, nil
 
+}
+
+// UpdateUserURL updates specific code record values
+func (s *urlService) UpdateUserURL(userID uint, oldCode string, newOriginalURL, newCode *string) error {
+	url, err := s.repo.FindByCode(oldCode)
+	if err != nil {
+		return errors.New("url not found")
+	}
+
+	if url.UserID != userID {
+		return errors.New("unauthorized")
+	}
+
+	// code update check
+	if newCode != nil && *newCode != "" && *newCode != url.Code {
+		isTaken, err := s.isCodeTaken(*newCode)
+		if err != nil {
+			return err
+		}
+		if isTaken {
+			return errors.New("new custom code already taken")
+		}
+		url.Code = *newCode
+	}
+
+	//original url update check
+	if newOriginalURL != nil && *newOriginalURL != "" && *newOriginalURL != url.OriginalURL {
+		url.OriginalURL = *newOriginalURL
+	}
+	return s.repo.Update(url)
 }
