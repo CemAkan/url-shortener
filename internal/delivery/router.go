@@ -34,5 +34,5 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 	adminGroup := api.Group("/admin", middleware.JWTAuth(), middleware.AdminOnly())
 
 	adminGroup.Get("/users", adminHandler.ListUsers)
-	//adminGroup.Delete("/users/:id", authHandler.DeleteUser)
+	adminGroup.Delete("/users/:id", adminHandler.RemoveUser)
 }
