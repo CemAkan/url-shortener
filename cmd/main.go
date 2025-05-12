@@ -10,6 +10,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/system"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure"
 	"github.com/gofiber/fiber/v2"
+	"net"
 )
 
 func main() {
@@ -49,7 +50,14 @@ func startServer(app *fiber.App, cancel context.CancelFunc) {
 	port := config.GetEnv("PORT", "3000")
 	infrastructure.Log.Infof("Starting Fiber on port: %s", port)
 
-	if err := app.Listen(":" + port); err != nil {
+	listener, err := net.Listen("tcp4", ":"+port)
+	if err != nil {
+		infrastructure.Log.Error(err.Error())
+	}
+	defer listener.Close()
+	err = app.Listener(listener)
+
+	if err != nil {
 		infrastructure.Log.WithError(err).Error("Fiber server failed to start")
 		cancel()
 	}
