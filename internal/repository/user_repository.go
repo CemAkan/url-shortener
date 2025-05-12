@@ -73,7 +73,7 @@ func (r *userRepo) GetByID(id uint) (*domain.User, error) {
 
 // Delete removes user record from database
 func (r *userRepo) Delete(id uint) error {
-	if err := r.db.Where("id = ?", id).First(&domain.User{}).Error; err != nil {
+	if err := r.db.Where("id = ?", id).Delete(&domain.User{}).Error; err != nil {
 		return err
 	}
 	return nil
