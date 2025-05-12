@@ -17,6 +17,7 @@ type URLService interface {
 	GetSingleUrlRecord(code string) (*domain.URL, int, error)
 	ResolveRedirect(ctx context.Context, code string) (string, error)
 	UpdateUserURL(userID uint, oldCode string, newOriginalURL, newCode *string) error
+	DeleteUserURL(userID uint, code string) error
 }
 
 type urlService struct {
