@@ -13,7 +13,7 @@ type URLRepository interface {
 	Update(url *domain.URL) error
 	AddToTotalClicks(code string, count int) error
 	Delete(code string) error
-	DeleteUserAllUrls(id uint) ([]domain.URL, error)
+	DeleteUserAllUrls(userID uint) ([]domain.URL, error)
 }
 
 type urlRepo struct {
@@ -67,10 +67,16 @@ func (r *urlRepo) Delete(code string) error {
 }
 
 // DeleteUserAllUrls removes all userId related url records from database
-func (r *urlRepo) DeleteUserAllUrls(id uint) ([]domain.URL, error) {
+func (r *urlRepo) DeleteUserAllUrls(userID uint) ([]domain.URL, error) {
 	var urls []domain.URL
-	if err := r.db.Where("user_id= ?", id).Find(&urls).Delete(&domain.URL{}).Error; err != nil {
+
+	if err := r.db.Where("user_id = ?", userID).Find(&urls).Error; err != nil {
 		return nil, err
 	}
+
+	if err := r.db.Where("user_id = ?", userID).Delete(&domain.URL{}).Error; err != nil {
+		return nil, err
+	}
+
 	return urls, nil
 }
