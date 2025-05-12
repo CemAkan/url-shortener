@@ -176,3 +176,21 @@ func (s *urlService) DeleteUserURL(userID uint, code string) error {
 
 	return s.repo.Delete(code)
 }
+
+// DeleteUserAllURLs removes user relational urls and their redis data
+func (s *urlService) DeleteUserAllURLs(userID uint) error {
+
+	urls, err := s.repo.DeleteUserAllUrls(userID)
+
+	if err != nil {
+		return err
+	}
+
+	// Redis key cleanup
+	for _, url := range urls {
+		utils.DeleteURLCache(url.Code)
+	}
+
+	return nil
+
+}
