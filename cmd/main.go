@@ -5,91 +5,96 @@ import (
 	"github.com/CemAkan/url-shortener/config"
 	appModule "github.com/CemAkan/url-shortener/internal/app"
 	"github.com/CemAkan/url-shortener/internal/delivery"
+	"github.com/CemAkan/url-shortener/internal/health"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/gofiber/fiber/v2"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
-
+	// Init phase
 	config.LoadEnv()
 	config.InitLogger()
 	config.InitDB()
 	config.InitRedis()
 
-	app := fiber.New()
+	appFiber := fiber.New()
 
 	// Dependency injection
-
-	//user
 	userRepo := repository.NewUserRepository()
 	userService := appModule.NewUserService(userRepo)
 	userHandler := delivery.NewAuthHandler(userService)
 
-	//url
 	urlRepo := repository.NewURLRepository()
 	urlService := appModule.NewURLService(urlRepo)
 	urlHandler := delivery.NewURLHandler(urlService)
 
-	// Routes
-	delivery.SetupRoutes(app, userHandler, urlHandler)
+	delivery.SetupRoutes(appFiber, userHandler, urlHandler)
 
-	// Graceful shutdown signal handling
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-
-	port := config.GetEnv("PORT", "3000")
-
-	// start fiber server goroutine
-	go func() {
-		err := app.Listen(":" + port)
-		if err != nil {
-			config.Log.Fatalf("Port can not listen: %v", err)
-			return
-		}
-		config.Log.Info("Server starting on port: %s", port)
-
-	}()
-
-	// Wait for Ctrl+C
-	<-quit
-	config.Log.Info("Shutdown signal received, closing server...")
-
-	// Graceful shutdown timeout context
-	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// Context for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// fiber shutdown
+	// Signal handling (SIGINT, SIGTERM)
+	go handleSignals(cancel)
+
+	// Watchdog health monitoring
+	go health.StartWatchdog(ctx, cancel)
+
+	// Fiber server
+	go func() {
+		port := config.GetEnv("PORT", "3000")
+		config.Log.Infof("Starting Fiber on port: %s", port)
+		if err := appFiber.Listen(":" + port); err != nil {
+			config.Log.WithError(err).Error("Fiber server failed to start")
+			cancel()
+		}
+	}()
+
+	// Wait for context cancel (signal or watchdog triggers this)
+	<-ctx.Done()
+	config.Log.Info("Shutdown initiated...")
+
+	gracefulShutdown(appFiber)
+}
+
+func handleSignals(cancel context.CancelFunc) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+	sig := <-sigs
+	config.Log.Infof("Received signal: %s", sig)
+	cancel()
+}
+
+func gracefulShutdown(app *fiber.App) {
+	// Fiber shutdown
 	if err := app.Shutdown(); err != nil {
-		config.Log.WithError(err).Fatal("Failed to shutdown server gracefully")
+		config.Log.WithError(err).Error("Failed to shutdown Fiber gracefully")
 	} else {
-		config.Log.Info("Server shutdown completed successfully")
+		config.Log.Info("Fiber shutdown completed")
 	}
 
 	// Redis shutdown
 	if config.Redis != nil {
-		config.Log.Info("Closing Redis connection...")
 		if err := config.Redis.Close(); err != nil {
 			config.Log.WithError(err).Error("Failed to close Redis connection")
 		} else {
-			config.Log.Info("Redis connection closed successfully")
+			config.Log.Info("Redis connection closed")
 		}
 	}
 
 	// DB shutdown
 	sqlDB, err := config.DB.DB()
-	if err != nil {
-		config.Log.WithError(err).Error("Failed to retrieve sql.DB from GORM")
-	} else {
-		config.Log.Info("Closing DB connection pool...")
+	if err == nil {
 		if err := sqlDB.Close(); err != nil {
-			config.Log.WithError(err).Error("Failed to close DB connection pool")
+			config.Log.WithError(err).Error("Failed to close DB pool")
 		} else {
-			config.Log.Info("DB connection pool closed successfully")
+			config.Log.Info("DB pool closed successfully")
 		}
+	} else {
+		config.Log.WithError(err).Error("Failed to retrieve DB pool")
 	}
 
 	config.Log.Info("Application shutdown complete. Exiting.")
