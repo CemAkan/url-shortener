@@ -13,6 +13,7 @@ type UserRepository interface {
 	Update(user *domain.User) error
 	ListAllUsers() ([]domain.User, error)
 	GetByID(id uint) (*domain.User, error)
+	Delete(id uint) error
 }
 
 type userRepo struct {
@@ -68,4 +69,12 @@ func (r *userRepo) GetByID(id uint) (*domain.User, error) {
 	var user domain.User
 	err := r.db.First(&user, id).Error
 	return &user, err
+}
+
+// Delete removes user record from database
+func (r *userRepo) Delete(id uint) error {
+	if err := r.db.Where("id = ?", id).First(&domain.User{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
