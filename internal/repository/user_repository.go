@@ -43,7 +43,10 @@ func (r *userRepo) FindByUsername(username string) (*domain.User, error) {
 
 	err := r.db.Where("username = ?", username).First(&user).Error
 
-	return &user, err
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 // Update modifies to existing user
