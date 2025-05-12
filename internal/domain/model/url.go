@@ -3,7 +3,7 @@ package model
 import "gorm.io/gorm"
 
 type URL struct {
-	gorm.Model
+	gorm.Model  `json:"-"`
 	Code        string `gorm:"uniqueIndex;not null"`
 	OriginalURL string `gorm:"not null"`
 	UserID      uint   `gorm:"index"`
