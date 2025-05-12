@@ -8,6 +8,9 @@ import (
 func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandler) {
 	api := app.Group("/api")
 
+	// implement log middleware
+	app.Use(middleware.RequestLogger())
+
 	// public routes (no need jwt)
 
 	//redirect
