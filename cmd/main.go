@@ -29,7 +29,9 @@ func main() {
 	urlService := app.NewURLService(urlRepo)
 	urlHandler := delivery.NewURLHandler(urlService)
 
-	delivery.SetupRoutes(appFiber, userHandler, urlHandler)
+	adminHandler := delivery.NewAdminHandler(userService, urlService)
+
+	delivery.SetupRoutes(appFiber, userHandler, urlHandler, adminHandler)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
