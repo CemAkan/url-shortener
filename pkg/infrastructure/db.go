@@ -1,18 +1,33 @@
 package infrastructure
 
 import (
+	"fmt"
+	"github.com/CemAkan/url-shortener/internal/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
 )
 
-func InitDB() *gorm.DB {
-	dsn := os.Getenv("DATABASE_URL")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+var DB *gorm.DB
+
+func InitDB() {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"), os.Getenv("DB_PORT"),
+	)
+
+	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
 	if err != nil {
-		Log.WithError(err).Fatal("Failed to connect to database")
+		Log.Fatalf("db connection error %v", err.Error())
 	}
 
-	Log.Info("Database connection established successfully")
-	return db
+	//auto migration
+	err = database.AutoMigrate(&domain.URL{}, &domain.User{})
+
+	if err != nil {
+		Log.Fatalf("db connection error %v", err.Error())
+	}
+
+	// set global db var
+	DB = database
 }
