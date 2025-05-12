@@ -18,7 +18,17 @@ func NewURLHandler(urlService app.URLService) *URLHandler {
 	}
 }
 
-// Shorten handles request to create short url
+// Shorten godoc
+// @Summary Shorten a URL
+// @Description Create a shortened URL with optional custom code
+// @Tags URL
+// @Accept json
+// @Produce json
+// @Param body request.ShortenURLRequest true "URL to shorten"
+// @Success 201 {object} response.URLResponse
+// @Failure 400 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /shorten [post]
 func (h *URLHandler) Shorten(c *fiber.Ctx) error {
 	var req request.ShortenURLRequest
 
@@ -40,7 +50,15 @@ func (h *URLHandler) Shorten(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(res)
 }
 
-// ListUserURLs handles request to list user's all urls
+// ListUserURLs godoc
+// @Summary Get user's URLs
+// @Description Retrieves all shortened URLs for authenticated user
+// @Tags URL
+// @Produce json
+// @Success 200 {array} model.URL
+// @Failure 500 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /my/urls [get]
 func (h *URLHandler) ListUserURLs(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
@@ -53,7 +71,16 @@ func (h *URLHandler) ListUserURLs(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(urls)
 }
 
-// GetSingleURL handles request to list a single url details with daily click info
+// GetSingleURL godoc
+// @Summary Get a single URL detail
+// @Description Retrieves a single short URL details with daily click count
+// @Tags URL
+// @Produce json
+// @Param code path string true "Short URL code"
+// @Success 200 {object} response.DetailedURLResponse
+// @Failure 404 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /my/urls/{code} [get]
 func (h *URLHandler) GetSingleURL(c *fiber.Ctx) error {
 	code := c.Params("code")
 
@@ -85,7 +112,16 @@ func (h *URLHandler) Redirect(c *fiber.Ctx) error {
 	return c.Redirect(originalURL, fiber.StatusFound)
 }
 
-// DeleteURL handle URL delete requests
+// DeleteURL godoc
+// @Summary Delete a shortened URL
+// @Description Deletes a user's shortened URL by code
+// @Tags URL
+// @Produce json
+// @Param code path string true "Short URL code"
+// @Success 200 {object} response.SuccessResponse
+// @Failure 403 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /my/urls/{code} [delete]
 func (h *URLHandler) DeleteURL(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 	code := c.Params("code")
@@ -97,7 +133,19 @@ func (h *URLHandler) DeleteURL(c *fiber.Ctx) error {
 	return c.JSON(response.SuccessResponse{Message: "user deleted successfully"})
 }
 
-// UpdateURL handle URL update requests
+// UpdateURL godoc
+// @Summary Update a shortened URL
+// @Description Updates original URL or custom code for a user's URL
+// @Tags URL
+// @Accept json
+// @Produce json
+// @Param code path string true "Short URL code"
+// @Param body request.UpdateURLRequest true "Updated URL info"
+// @Success 200 {object} response.SuccessResponse
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 403 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /my/urls/{code} [patch]
 func (h *URLHandler) UpdateURL(c *fiber.Ctx) error {
 	var req request.UpdateURLRequest
 
