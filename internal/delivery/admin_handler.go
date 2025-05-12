@@ -2,7 +2,7 @@ package delivery
 
 import (
 	"github.com/CemAkan/url-shortener/internal/app"
-	"github.com/CemAkan/url-shortener/internal/domain/model"
+	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 )
@@ -24,24 +24,18 @@ func NewAdminHandler(userService app.UserService, urlService app.URLService) *Ad
 func (h *AdminHandler) ListUsers(c *fiber.Ctx) error {
 	users, err := h.userService.ListAllUsers()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
-	type res struct {
-		User model.User
-		Urls []model.URL
-	}
-
-	var resp res
-	var resps []res
+	var resps []response.UserURLsResponse
 
 	for _, user := range users {
 		urls, _ := h.urlService.GetUserURLs(user.ID)
 
-		resp.User = user
-		resp.Urls = urls
-
-		resps = append(resps, resp)
+		resps = append(resps, response.UserURLsResponse{
+			User: user,
+			Urls: urls,
+		})
 	}
 
 	return c.JSON(resps)
@@ -49,18 +43,20 @@ func (h *AdminHandler) ListUsers(c *fiber.Ctx) error {
 
 // RemoveUser delete selected user record
 func (h *AdminHandler) RemoveUser(c *fiber.Ctx) error {
-
-	id, _ := strconv.Atoi(c.Params("id"))
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid user id"})
+	}
 
 	userID := uint(id)
 
 	if err := h.urlService.DeleteUserAllURLs(userID); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
 	if err := h.userService.DeleteUser(userID); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"Success": "Deleted successfully"})
+	return c.JSON(response.SuccessResponse{Message: "user deleted successfully"})
 }
