@@ -60,7 +60,7 @@ func (r *urlRepo) AddToTotalClicks(code string, count int) error {
 
 // Delete removes code related url record from database
 func (r *urlRepo) Delete(code string) error {
-	if err := r.db.Where("code= ?", code).Delete(domain.URL{}).Error; err != nil {
+	if err := r.db.Where("code= ?", code).Delete(&domain.URL{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -68,7 +68,7 @@ func (r *urlRepo) Delete(code string) error {
 
 // DeleteUserAllUrls removes all userId related url records from database
 func (r *urlRepo) DeleteUserAllUrls(id uint) error {
-	if err := r.db.Where("user_id= ?", id).Delete(domain.URL{}).Error; err != nil {
+	if err := r.db.Where("user_id= ?", id).Delete(&domain.URL{}).Error; err != nil {
 		return err
 	}
 	return nil
