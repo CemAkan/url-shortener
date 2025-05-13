@@ -6,6 +6,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// Health godoc
+// @Summary Health Check
+// @Description Returns current health status of DB and Redis
+// @Tags Health
+// @Success 200 {object} response.HealthStatusResponse
+// @Router /health [get]
 func Health(c *fiber.Ctx) error {
 	dbStatus := "ok"
 	if !health.GetDBStatus() {
