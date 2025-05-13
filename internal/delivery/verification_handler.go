@@ -43,6 +43,20 @@ func (h *VerificationHandler) VerifyMailAddress(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{Message: "mail confirmation successfully"})
 }
 
+// ResetPassword godoc
+// @Summary Reset user password with verification token
+// @Description Sets new password after token verification
+// @Tags Verification
+// @Accept json
+// @Produce json
+// @Param token path string true "Verification Token"
+// @Param request body request.NewPassword true "New Password"
+// @Success 200 {object} response.SuccessResponse
+// @Failure 404 {object} response.ErrorResponse
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /verify/password/{token} [post]
 func (h *VerificationHandler) ResetPassword(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
