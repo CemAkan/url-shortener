@@ -133,3 +133,8 @@ func (s *userService) format(word string) (string, error) {
 	runes[0] = unicode.ToUpper(runes[0])
 	return string(runes), nil
 }
+
+// SetTrueEmailConfirmation sets true is_email_confirmed field
+func (s *userService) SetTrueEmailConfirmation(id uint) error {
+	return s.repo.SetTrueMailConfirmationStatus(id)
+}
