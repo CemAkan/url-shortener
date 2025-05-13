@@ -22,6 +22,7 @@ import (
 
 func main() {
 	config.LoadEnv()
+	config.InitMail()
 	infrastructure.InitLogger()
 	infrastructure.InitDB()
 	infrastructure.InitRedis()
