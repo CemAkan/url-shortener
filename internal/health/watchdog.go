@@ -11,16 +11,13 @@ const (
 )
 
 var (
-	logFileName       = "health"
-	logFileOutputType = "file"
+	logger = infrastructure.SpecialLogger("health", "file")
 )
 
 // StartWatchdog monitors DB & Redis health and cancels ctx when threshold exceeded
 func StartWatchdog(ctx context.Context) {
 	ticker := time.NewTicker(HealthCheckInterval)
 	defer ticker.Stop()
-
-	logger := infrastructure.SpecialLogger(logFileName, logFileOutputType)
 
 	logger.Info("Health Watchdog started")
 
@@ -51,6 +48,8 @@ func checkDBHealth(ctx context.Context) bool {
 		healthy = false
 	}
 
+	logger.Infof("Database health is %v", healthy)
+
 	return healthy
 }
 
@@ -65,6 +64,8 @@ func checkRedisHealth(ctx context.Context) bool {
 		infrastructure.Log.WithError(err).Error("Redis healthcheck failed")
 		healthy = false
 	}
+
+	logger.Infof("Redis health is %v", healthy)
 
 	return healthy
 }
