@@ -10,13 +10,14 @@ import (
 )
 
 type AuthHandler struct {
-	service app.UserService
+	userService app.UserService
+	mailService app.MailService
 }
 
 // NewAuthHandler creates a new AuthHandler struct with given UserService input
 func NewAuthHandler(userService app.UserService) *AuthHandler {
 	return &AuthHandler{
-		service: userService,
+		userService: userService,
 	}
 }
 
@@ -37,7 +38,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid request body"})
 	}
 
-	user, err := h.service.Register(req.Email, req.Password, req.Name, req.Surname)
+	user, err := h.userService.Register(req.Email, req.Password, req.Name, req.Surname)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: err.Error()})
@@ -66,7 +67,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid request body"})
 	}
 
-	user, err := h.service.Login(req.Email, req.Password)
+	user, err := h.userService.Login(req.Email, req.Password)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: err.Error()})
@@ -99,7 +100,7 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 
 	//user existence check
 
-	user, err := h.service.GetByID(id)
+	user, err := h.userService.GetByID(id)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: "User not found"})
