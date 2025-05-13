@@ -73,7 +73,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	// generate jwt token
-	token, err := config.GenerateJWT(user.ID, time.Duration(24*time.Hour))
+	token, err := config.GenerateToken(user.ID, time.Duration(24*time.Hour), "auth")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: "failed to generate token"})
 	}
