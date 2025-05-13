@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"github.com/CemAkan/url-shortener/internal/app"
+	"github.com/CemAkan/url-shortener/internal/domain/request"
 	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/gofiber/fiber/v2"
 )
@@ -17,6 +18,17 @@ func NewVerificationHandler(userService app.UserService) *VerificationHandler {
 	}
 }
 
+// VerifyMailAddress godoc
+// @Summary Verify user's email address
+// @Description Validates email address through verification token
+// @Tags Verification
+// @Produce json
+// @Param token path string true "Verification Token"
+// @Success 200 {object} response.SuccessResponse
+// @Failure 404 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /verify/mail/{token} [get]
 func (h *VerificationHandler) VerifyMailAddress(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
@@ -38,13 +50,13 @@ func (h *VerificationHandler) ResetPassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(response.ErrorResponse{Error: "User not found"})
 	}
 
-	var req string //new password
+	var req request.NewPassword //new password
 
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid request"})
 	}
 
-	if err := h.userService.PasswordUpdate(userID, req); err != nil {
+	if err := h.userService.PasswordUpdate(userID, req.Password); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: "password update fail"})
 	}
 
