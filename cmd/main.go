@@ -54,7 +54,7 @@ func main() {
 	go startServer(appFiber, cancel)
 
 	<-ctx.Done()
-	defer system.GracefulShutdown(appFiber)
+	system.GracefulShutdown(appFiber)
 }
 
 func startServer(app *fiber.App, cancel context.CancelFunc) {
