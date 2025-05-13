@@ -19,7 +19,7 @@ func GenerateToken(userID uint, expiresIn time.Duration, purpose string) (string
 	return token.SignedString(jwtSecret)
 }
 
-func ResolveToken(tokenStr, purpose string) (*jwt.Token, error) {
+func ResolveToken(tokenStr string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil
 	})
