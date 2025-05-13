@@ -4,13 +4,21 @@ import (
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/utils"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/sirupsen/logrus"
 	"time"
 )
+
+var mailLogger *logrus.Logger
+
+func init() {
+	mailLogger = infrastructure.SpecialLogger("mail", "file")
+}
 
 type MailService interface {
 	SendVerificationMail(name, email, verifyLink string) error
 	SendPasswordResetMail(name, email, verifyLink string) error
 	VerifyLinkGenerator(userID uint, baseURL string) (string, error)
+	GetMailLogger() *logrus.Logger
 }
 
 type mailService struct{}
@@ -50,4 +58,9 @@ func (s *mailService) SendPasswordResetMail(name, email, verifyLink string) erro
 	}
 
 	return nil
+}
+
+// GetMailLogger return specialized logger for mail service
+func (s *mailService) GetMailLogger() *logrus.Logger {
+	return mailLogger
 }
