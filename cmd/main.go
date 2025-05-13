@@ -31,22 +31,27 @@ func main() {
 
 	// Dependency injection
 
-	//mail
+	//MAIL
 	mailService := app.NewMailService()
 
-	//user
+	//USER
+
+	//auth
 	userRepo := repository.NewUserRepository()
 	userService := app.NewUserService(userRepo)
-	userHandler := delivery.NewAuthHandler(userService, mailService)
+	authHandler := delivery.NewAuthHandler(userService, mailService)
 
-	//url
+	//verification
+	verificationHandler := delivery.NewVerificationHandler(userService, mailService)
+
+	//URL
 	urlRepo := repository.NewURLRepository()
 	urlService := app.NewURLService(urlRepo)
 	urlHandler := delivery.NewURLHandler(urlService)
 
 	adminHandler := delivery.NewAdminHandler(userService, urlService)
 
-	delivery.SetupRoutes(appFiber, userHandler, urlHandler, adminHandler)
+	delivery.SetupRoutes(appFiber, authHandler, urlHandler, adminHandler, verificationHandler)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
