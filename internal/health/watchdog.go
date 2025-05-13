@@ -28,7 +28,7 @@ func StartWatchdog(ctx context.Context) {
 			return
 
 		case <-ticker.C:
-			logger.Info("Watchdog tick: running health checks")
+			//logger.Info("Watchdog tick: running health checks")
 
 			SetDBStatus(checkDBHealth(ctx))
 			SetRedisStatus(checkRedisHealth(ctx))
