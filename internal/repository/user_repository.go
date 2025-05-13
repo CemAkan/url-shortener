@@ -14,6 +14,7 @@ type UserRepository interface {
 	ListAllUsers() ([]model.User, error)
 	GetByID(id uint) (*model.User, error)
 	Delete(id uint) error
+	SetTrueMailConfirmationStatus(id uint) error
 }
 
 type userRepo struct {
@@ -74,6 +75,14 @@ func (r *userRepo) GetByID(id uint) (*model.User, error) {
 // Delete removes user record from database
 func (r *userRepo) Delete(id uint) error {
 	if err := r.db.Where("id = ?", id).Delete(&model.User{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// SetTrueMailConfirmationStatus set true is_mail_confirmed field in selected user record with userID
+func (r *userRepo) SetTrueMailConfirmationStatus(id uint) error {
+	if err := r.db.Model(&model.User{}).Where("id=?", id).Updates(model.User{IsMailConfirmed: true}).Error; err != nil {
 		return err
 	}
 	return nil
