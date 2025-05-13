@@ -16,6 +16,7 @@ type UserService interface {
 	GetByID(id uint) (*model.User, error)
 	DeleteUser(id uint) error
 	ListAllUsers() ([]model.User, error)
+	SetTrueEmailConfirmation(id uint) error
 }
 
 type userService struct {
