@@ -46,9 +46,8 @@ func checkDBHealth(ctx context.Context) bool {
 	if err != nil || sqlDB.PingContext(ctx) != nil {
 		infrastructure.Log.WithError(err).Error("Database healthcheck failed")
 		healthy = false
+		logger.Warn("Database down")
 	}
-
-	logger.Infof("Database health is %v", healthy)
 
 	return healthy
 }
@@ -63,9 +62,8 @@ func checkRedisHealth(ctx context.Context) bool {
 	if err := infrastructure.Redis.Ping(rCtx).Err(); err != nil {
 		infrastructure.Log.WithError(err).Error("Redis healthcheck failed")
 		healthy = false
+		logger.Warn("Redis down")
 	}
-
-	logger.Infof("Redis health is %v", healthy)
 
 	return healthy
 }
