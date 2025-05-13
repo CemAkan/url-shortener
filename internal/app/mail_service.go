@@ -17,7 +17,7 @@ func init() {
 type MailService interface {
 	SendVerificationMail(name, email, verifyLink string) error
 	SendPasswordResetMail(name, email, verifyLink string) error
-	VerifyLinkGenerator(userID uint, baseURL string) (string, error)
+	VerifyLinkGenerator(userID uint, baseURL, subject string, duration time.Duration) (string, error)
 	GetMailLogger() *logrus.Logger
 }
 
@@ -38,8 +38,8 @@ func (s *mailService) SendVerificationMail(name, email, verifyLink string) error
 }
 
 // VerifyLinkGenerator generates new verification end of the link
-func (s *mailService) VerifyLinkGenerator(userID uint, baseURL string) (string, error) {
-	token, err := config.GenerateToken(userID, 24*time.Hour, "email_verification")
+func (s *mailService) VerifyLinkGenerator(userID uint, baseURL, subject string, duration time.Duration) (string, error) {
+	token, err := config.GenerateToken(userID, duration, subject)
 	if err != nil {
 		return "", err
 	}
