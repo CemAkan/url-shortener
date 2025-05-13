@@ -33,8 +33,8 @@ func InitMail() {
 func (m *Mailer) Send(to, subject, body string) error {
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", m.from)
-	msg.SetHeader("To", m.from)
-	msg.SetHeader("Subject", m.from)
+	msg.SetHeader("To", to)
+	msg.SetHeader("Subject", subject)
 	msg.SetBody("text/html", body)
 
 	return m.dialer.DialAndSend(msg)
