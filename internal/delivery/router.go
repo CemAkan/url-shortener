@@ -28,12 +28,15 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 	app.Get("/verify/:token", middleware.JWTVerification("email_verification"), verificationHandler.VerifyMailAddress)
 	app.Post("/verify/:token", middleware.JWTVerification("password_reset_verification"), verificationHandler.ResetPassword)
 
-	//user
+	//auth
 	api.Post("/register", authHandler.Register)
 	api.Post("/login", authHandler.Login)
 
-	// protected routes (jwt required)
+	// -- protected routes (jwt required) --
+
+	//user
 	api.Get("/me", middleware.JWTAuth("auth"), authHandler.Me)
+	api.Get("/password/reset", middleware.JWTAuth("auth"), authHandler.ResetPassword)
 
 	//url
 	api.Post("/shorten", middleware.JWTAuth("auth"), urlHandler.Shorten)
