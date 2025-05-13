@@ -23,7 +23,7 @@ func JWTAuth(purpose string) fiber.Handler {
 		tokenStr = strings.TrimSpace(tokenStr)
 
 		// Token check
-		token, err := config.ValidateToken(tokenStr, purpose)
+		token, err := config.ResolveToken(tokenStr, purpose)
 
 		if err != nil || !token.Valid {
 			return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{Error: "Invalid or expired token"})
