@@ -5,11 +5,14 @@ import (
 	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"golang.org/x/crypto/bcrypt"
+	"net/mail"
+	"strings"
+	"unicode"
 )
 
 type UserService interface {
-	Register(username, password string) (*model.User, error)
-	Login(username, password string) (*model.User, error)
+	Register(email, password, name, surname string) (*model.User, error)
+	Login(email, password string) (*model.User, error)
 	GetByID(id uint) (*model.User, error)
 	DeleteUser(id uint) error
 	ListAllUsers() ([]model.User, error)
@@ -25,13 +28,13 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 	}
 }
 
-// Register checks username existence and save new user record to db with hashed password
-func (s *userService) Register(username, password string) (*model.User, error) {
-	// username existence checking
-	existing, err := s.repo.FindByUsername(username)
+// Register checks email existence and save new user record to db with hashed password
+func (s *userService) Register(email, password, name, surname string) (*model.User, error) {
+	// email existence checking
+	existing, err := s.repo.FindByEmail(email)
 
 	if existing != nil && err == nil {
-		return nil, errors.New("username already taken")
+		return nil, errors.New("email already registered")
 	}
 
 	//password hashing
@@ -40,10 +43,26 @@ func (s *userService) Register(username, password string) (*model.User, error) {
 	if err != nil {
 		return nil, errors.New("password hashing failure")
 	}
+
+	formatedName, err := s.format(name)
+	if err != nil {
+		return nil, errors.New("name required")
+	}
+
+	formatedSurname, err := s.format(surname)
+	if err != nil {
+		return nil, errors.New("surname required")
+	}
+
+	if _, err := mail.ParseAddress(email); err != nil {
+		return nil, errors.New("invalid email address")
+	}
+
 	user := &model.User{
-		Username: username,
+		Name:     formatedName,
+		Surname:  formatedSurname,
+		Email:    email,
 		Password: string(hashedPassword),
-		IsAdmin:  false, // admin role can not get outside
 	}
 
 	if err := s.repo.Create(user); err != nil {
@@ -54,10 +73,10 @@ func (s *userService) Register(username, password string) (*model.User, error) {
 
 }
 
-// Login checks username existence and its related password's correctness
-func (s *userService) Login(username, password string) (*model.User, error) {
+// Login checks email existence and its related password's correctness
+func (s *userService) Login(email, password string) (*model.User, error) {
 
-	user, err := s.repo.FindByUsername(username)
+	user, err := s.repo.FindByEmail(email)
 
 	if err != nil {
 		return nil, errors.New("invalid username or password")
@@ -94,4 +113,23 @@ func (s *userService) DeleteUser(id uint) error {
 // ListAllUsers gets all user records
 func (s *userService) ListAllUsers() ([]model.User, error) {
 	return s.repo.ListAllUsers()
+}
+
+// Format cleans spaces, lower-cases everything, then capitalises only the first rune.
+func (s *userService) format(word string) (string, error) {
+	// remove spaces outside
+	w := strings.ToLower(strings.TrimSpace(word))
+
+	// remove spaces inside
+	w = strings.ReplaceAll(w, " ", "")
+
+	//if it is empty return it
+	if w == "" {
+		return "", errors.New("empty input")
+	}
+
+	//make capital first char
+	runes := []rune(w)
+	runes[0] = unicode.ToUpper(runes[0])
+	return string(runes), nil
 }
