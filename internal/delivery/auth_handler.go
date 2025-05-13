@@ -134,6 +134,16 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 	return c.JSON(res)
 }
 
+// ResetPassword godoc
+// @Summary Send password reset mail
+// @Description Sends password reset link to user's email
+// @Tags Auth
+// @Produce json
+// @Success 200 {object} response.SuccessResponse
+// @Failure 404 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Security BearerAuth
+// @Router /password/reset [get]
 func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
 
