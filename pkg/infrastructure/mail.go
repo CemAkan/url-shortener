@@ -26,7 +26,10 @@ func InitMail() {
 
 	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	Mail.dialer, Mail.from = dialer, from
+	Mail = &Mailer{
+		dialer: dialer,
+		from:   from,
+	}
 }
 
 // Send sends email
