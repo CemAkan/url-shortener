@@ -2,19 +2,20 @@ package middleware
 
 import (
 	"github.com/CemAkan/url-shortener/config"
+	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"strings"
 )
 
-func JWTAuth() fiber.Handler {
+func JWTAuth(purpose string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
 		authHeader := c.Get("Authorization")
 
 		//Authorization header format check
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Missing or invalid Authorization header"})
+			return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{Error: "Missing or invalid Authorization header"})
 		}
 
 		// Trimming
@@ -22,10 +23,10 @@ func JWTAuth() fiber.Handler {
 		tokenStr = strings.TrimSpace(tokenStr)
 
 		// Token check
-		token, err := config.ValidateJWT(tokenStr)
+		token, err := config.ValidateToken(tokenStr, purpose)
 
 		if err != nil || !token.Valid {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid or expired token"})
+			return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{Error: "Invalid or expired token"})
 
 		}
 
@@ -33,9 +34,13 @@ func JWTAuth() fiber.Handler {
 		claims, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid token claims",
+			return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
+				Error: "Invalid token claims",
 			})
+		}
+
+		if claims["type"] != purpose {
+			return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{Error: "invalid token type"})
 		}
 
 		// userID claim
@@ -43,8 +48,8 @@ func JWTAuth() fiber.Handler {
 		userID, ok := claims["user_id"].(float64)
 
 		if !ok {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid token user ID",
+			return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
+				Error: "Invalid token user ID",
 			})
 		}
 
