@@ -33,9 +33,9 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 // Register checks email existence and save new user record to db with hashed password
 func (s *userService) Register(email, password, name, surname string) (*model.User, error) {
 	// email existence checking
-	existing, err := s.repo.FindByEmail(email)
+	existing, _ := s.repo.FindByEmail(email)
 
-	if existing != nil && err == nil {
+	if existing != nil {
 		return nil, errors.New("email already registered")
 	}
 
@@ -149,7 +149,14 @@ func (s *userService) PasswordUpdate(userID uint, newPassword string) error {
 		return errors.New("user not found")
 	}
 
-	user.Password = newPassword
+	//password hashing
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+
+	if err != nil {
+		errors.New("assword hashing failure")
+	}
+
+	user.Password = string(hashedPassword)
 
 	return s.repo.Update(user)
 }
