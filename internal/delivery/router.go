@@ -26,6 +26,7 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 
 	//verification
 	app.Get("/verify/:token", middleware.JWTVerification("email_verification"), verificationHandler.VerifyMailAddress)
+	app.Post("/verify/:token", middleware.JWTVerification("password_reset_verification"), verificationHandler.ResetPassword)
 
 	//user
 	api.Post("/register", authHandler.Register)
