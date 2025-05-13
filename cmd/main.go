@@ -30,10 +30,16 @@ func main() {
 	appFiber := fiber.New()
 
 	// Dependency injection
+
+	//mail
+	mailService := app.NewMailService()
+
+	//user
 	userRepo := repository.NewUserRepository()
 	userService := app.NewUserService(userRepo)
-	userHandler := delivery.NewAuthHandler(userService)
+	userHandler := delivery.NewAuthHandler(userService, mailService)
 
+	//url
 	urlRepo := repository.NewURLRepository()
 	urlService := app.NewURLService(urlRepo)
 	urlHandler := delivery.NewURLHandler(urlService)
