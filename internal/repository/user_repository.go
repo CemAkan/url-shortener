@@ -9,7 +9,7 @@ import (
 type UserRepository interface {
 	Create(user *model.User) error
 	FindByID(id uint) (*model.User, error)
-	FindByUsername(username string) (*model.User, error)
+	FindByEmail(email string) (*model.User, error)
 	Update(user *model.User) error
 	ListAllUsers() ([]model.User, error)
 	GetByID(id uint) (*model.User, error)
@@ -38,11 +38,11 @@ func (r *userRepo) FindByID(id uint) (*model.User, error) {
 	return &user, err
 }
 
-// FindByUsername retrieves user by username
-func (r *userRepo) FindByUsername(username string) (*model.User, error) {
-	var user model.User //replacing
+// FindByEmail retrieves user by username
+func (r *userRepo) FindByEmail(email string) (*model.User, error) {
+	var user model.User
 
-	err := r.db.Where("username = ?", username).First(&user).Error
+	err := r.db.Where("email = ?", email).First(&user).Error
 
 	if err != nil {
 		return nil, err
