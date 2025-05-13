@@ -15,9 +15,10 @@ type AuthHandler struct {
 }
 
 // NewAuthHandler creates a new AuthHandler struct with given UserService input
-func NewAuthHandler(userService app.UserService) *AuthHandler {
+func NewAuthHandler(userService app.UserService, mailService app.MailService) *AuthHandler {
 	return &AuthHandler{
 		userService: userService,
+		mailService: mailService,
 	}
 }
 
