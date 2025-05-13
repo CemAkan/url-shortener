@@ -37,14 +37,14 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid request body"})
 	}
 
-	user, err := h.service.Register(req.Username, req.Password)
+	user, err := h.service.Register(req.Email, req.Password, req.Name, req.Surname)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
 	var res response.UserResponse
-	res.ID, res.Username = user.ID, user.Username
+	res.ID, res.Email = user.ID, user.Email
 
 	return c.Status(fiber.StatusCreated).JSON(res)
 }
@@ -66,7 +66,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid request body"})
 	}
 
-	user, err := h.service.Login(req.Username, req.Password)
+	user, err := h.service.Login(req.Email, req.Password)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: err.Error()})
@@ -79,7 +79,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	var res response.LoginResponse
-	res.ID, res.Username, res.Token = user.ID, user.Username, token
+	res.ID, res.Email, res.Token = user.ID, user.Email, token
 
 	return c.Status(fiber.StatusCreated).JSON(res)
 }
@@ -106,7 +106,7 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 	}
 
 	var res response.UserResponse
-	res.ID, res.Username = user.ID, user.Username
+	res.ID, res.Email = user.ID, user.Email
 
 	// success return with user's data
 	return c.JSON(res)
