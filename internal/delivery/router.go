@@ -29,17 +29,17 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 	api.Post("/login", authHandler.Login)
 
 	// protected routes (jwt required)
-	api.Get("/me", middleware.JWTAuth(), authHandler.Me)
+	api.Get("/me", middleware.JWTAuth("auth"), authHandler.Me)
 
 	//url
-	api.Post("/shorten", middleware.JWTAuth(), urlHandler.Shorten)
-	api.Get("/my/urls", middleware.JWTAuth(), urlHandler.ListUserURLs)
-	api.Get("/my/urls/:code", middleware.JWTAuth(), urlHandler.GetSingleURL)
-	api.Delete("/my/urls/:code", middleware.JWTAuth(), urlHandler.DeleteURL)
-	api.Patch("/my/urls/:code", middleware.JWTAuth(), urlHandler.UpdateURL)
+	api.Post("/shorten", middleware.JWTAuth("auth"), urlHandler.Shorten)
+	api.Get("/my/urls", middleware.JWTAuth("auth"), urlHandler.ListUserURLs)
+	api.Get("/my/urls/:code", middleware.JWTAuth("auth"), urlHandler.GetSingleURL)
+	api.Delete("/my/urls/:code", middleware.JWTAuth("auth"), urlHandler.DeleteURL)
+	api.Patch("/my/urls/:code", middleware.JWTAuth("auth"), urlHandler.UpdateURL)
 
 	// Admin routes
-	adminGroup := api.Group("/admin", middleware.JWTAuth(), middleware.AdminOnly())
+	adminGroup := api.Group("/admin", middleware.JWTAuth("auth"), middleware.AdminOnly())
 
 	adminGroup.Get("/users", adminHandler.ListUsers)
 	adminGroup.Delete("/users/:id", adminHandler.RemoveUser)
