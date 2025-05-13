@@ -16,8 +16,6 @@ func StartWatchdog(ctx context.Context, cancel context.CancelFunc) {
 	ticker := time.NewTicker(HealthCheckInterval)
 	defer ticker.Stop()
 
-	failures := 0
-
 	infrastructure.Log.Info("Health Watchdog started")
 
 	for {
@@ -27,23 +25,17 @@ func StartWatchdog(ctx context.Context, cancel context.CancelFunc) {
 			return
 
 		case <-ticker.C:
-			if !checkHealth(ctx) {
-				failures++
-				infrastructure.Log.Warnf("Healthcheck failed (%d/%d)", failures, MaxFailures)
-				if failures >= MaxFailures {
-					infrastructure.Log.Error("Failure threshold reached. Triggering shutdown via context cancel")
-					cancel()
-					return
-				}
-			} else {
-				failures = 0
-				// infrastructure.Log.Info("Healthcheck passed: DB & Redis OK")
-			}
+			infrastructure.Log.Info("Watchdog tick: running health checks")
+
+			SetDBStatus(checkDBHealth(ctx))
+			SetRedisStatus(checkRedisHealth(ctx))
+
 		}
 	}
 }
 
-func checkHealth(ctx context.Context) bool {
+// checkDBHealth checks database health
+func checkDBHealth(ctx context.Context) bool {
 	healthy := true
 
 	// db health check
@@ -52,6 +44,13 @@ func checkHealth(ctx context.Context) bool {
 		infrastructure.Log.WithError(err).Error("Database healthcheck failed")
 		healthy = false
 	}
+
+	return healthy
+}
+
+// checkRedisHealth checks redis health
+func checkRedisHealth(ctx context.Context) bool {
+	healthy := true
 
 	//redis health check
 	rCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
