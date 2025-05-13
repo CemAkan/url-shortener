@@ -13,15 +13,13 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 	// Swagger UI Route
 	api.Get("/docs/*", fiberSwagger.WrapHandler)
 
-	// Favicon handler to prevent false URL lookups
-	app.Get("/favicon.ico", func(c *fiber.Ctx) error {
-		return c.SendStatus(fiber.StatusNoContent) // 204 No Content
-	})
-
 	// implement log middleware
 	app.Use(middleware.RequestLogger())
 
 	// public routes (no need jwt)
+
+	//health
+	api.Get("/health", Health)
 
 	//redirect
 	app.Get("/:code", urlHandler.Redirect)
