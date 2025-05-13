@@ -17,6 +17,7 @@ type UserService interface {
 	DeleteUser(id uint) error
 	ListAllUsers() ([]model.User, error)
 	SetTrueEmailConfirmation(id uint) error
+	PasswordUpdate(userID uint, newPassword string) error
 }
 
 type userService struct {
@@ -138,4 +139,17 @@ func (s *userService) format(word string) (string, error) {
 // SetTrueEmailConfirmation sets true is_email_confirmed field
 func (s *userService) SetTrueEmailConfirmation(id uint) error {
 	return s.repo.SetTrueMailConfirmationStatus(id)
+}
+
+// PasswordUpdate change password with new one
+func (s *userService) PasswordUpdate(userID uint, newPassword string) error {
+	user, err := s.GetByID(userID)
+
+	if err != nil {
+		return errors.New("user not found")
+	}
+
+	user.Password = newPassword
+
+	return s.repo.Update(user)
 }
