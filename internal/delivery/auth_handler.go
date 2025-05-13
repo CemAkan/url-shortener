@@ -45,6 +45,21 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: err.Error()})
 	}
 
+	// get baseURL from fiber
+	baseURL := c.BaseURL()
+
+	//verify link generator
+	verifyLink, err := h.mailService.VerifyLinkGenerator(user.ID, baseURL)
+
+	if err != nil {
+		h.mailService.GetMailLogger().Warnf("verify token generation for %s mail address failed: %v", user.Email, err.Error())
+	}
+
+	// email address verification mail sending
+	if err := h.mailService.SendVerificationMail(user.Name, user.Email, verifyLink); err != nil {
+		h.mailService.GetMailLogger().Warnf("send verification mail to %s mail address failed: %v", user.Email, err.Error())
+	}
+
 	var res response.UserResponse
 	res.ID, res.Email = user.ID, user.Email
 
