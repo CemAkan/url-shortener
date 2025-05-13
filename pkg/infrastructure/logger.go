@@ -18,17 +18,16 @@ func InitLogger() {
 		_ = os.Mkdir("logs", 0775)
 	}
 
-	// app.log file opener and creator if it not exist
-	appFile, err := os.OpenFile("logs/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	var err error
 
-	//set mainLogFile
-	mainLogFile = appFile
+	// app.log file opener and creator if it not exist
+	mainLogFile, err = FileOpener("app")
 
 	if err != nil {
 		Log.Warn("failed to open log file, defaulting open stdout only")
 		Log.SetOutput(os.Stdout)
 	} else {
-		Log.SetOutput(io.MultiWriter(appFile, os.Stdout))
+		Log.SetOutput(io.MultiWriter(mainLogFile, os.Stdout))
 	}
 
 	Log.SetLevel(logrus.InfoLevel)
@@ -63,10 +62,9 @@ func SpecialLogger(fileName string, outputType string) *logrus.Logger {
 
 		// If fileName is given, try to open that file
 		if fileName != "" {
-			logFilePath := fmt.Sprintf("logs/" + fileName + ".log")
-			file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+			file, err := FileOpener(fileName)
 			if err != nil {
-				Log.WithError(err).Warnf("Failed to open %s, using default main log file", logFilePath)
+				Log.WithError(err).Warnf("Failed to open %s, using default main log file", fileName)
 			} else {
 				output = file
 			}
@@ -90,4 +88,15 @@ func SpecialLogger(fileName string, outputType string) *logrus.Logger {
 	})
 
 	return logger
+}
+
+// FileOpener open if file is exist or not create a new one
+func FileOpener(fileName string) (io.Writer, error) {
+	logFilePath := fmt.Sprintf("logs/" + fileName + ".log")
+	file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 }
