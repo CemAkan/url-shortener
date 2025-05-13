@@ -22,11 +22,11 @@ func NewMailService() MailService {
 
 // SendVerificationMail sends email to verify mail address
 func (s *mailService) SendVerificationMail(name, email, verifyLink string) error {
-	subject := "Welcome! Please confirm your email address"
-	if err := infrastructure.Mail.Send(email, subject, utils.GenerateEmailVerification(name, verifyLink)); er != nil {
+	subject := "Welcome URL-Shortener! Please confirm your email address"
+	if err := infrastructure.Mail.Send(email, subject, utils.GenerateEmailVerification(name, verifyLink)); err != nil {
 		return err
 	}
-
+	return nil
 }
 
 // VerifyLinkGenerator generates new verification end of the link
@@ -38,4 +38,16 @@ func (s *mailService) VerifyLinkGenerator(userID uint, baseURL string) (string, 
 
 	return baseURL + "/verify/" + token, nil
 
+}
+
+//
+
+func (s *mailService) SendPasswordResetMail(name, email, verifyLink string) error {
+	subject := " Reset your URL-Shortener password"
+
+	if err := infrastructure.Mail.Send(email, subject, utils.GenerateResetPasswordEmail(name, verifyLink)); err != nil {
+		return err
+	}
+
+	return nil
 }
