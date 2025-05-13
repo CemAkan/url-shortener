@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+var (
+	mailValidationLinkExpireTime = time.Duration(24 * time.Hour)
+	passwordResetLinkExpireTime  = time.Duration(15 * time.Minute)
+)
+
 type AuthHandler struct {
 	userService app.UserService
 	mailService app.MailService
@@ -49,7 +54,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	baseURL := c.BaseURL()
 
 	//verify link generator
-	verifyLink, err := h.mailService.VerifyLinkGenerator(user.ID, baseURL)
+	verifyLink, err := h.mailService.VerifyLinkGenerator(user.ID, baseURL, "email_verification", mailValidationLinkExpireTime)
 
 	if err != nil {
 		h.mailService.GetMailLogger().Warnf("verify token generation for %s mail address failed: %v", user.Email, err.Error())
@@ -127,4 +132,31 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 
 	// success return with user's data
 	return c.JSON(res)
+}
+
+func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(uint)
+
+	user, err := h.userService.GetByID(userID)
+
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(response.ErrorResponse{Error: "user not found"})
+	}
+
+	// get baseURL from fiber
+	baseURL := c.BaseURL()
+
+	//verify link generator
+	verifyLink, err := h.mailService.VerifyLinkGenerator(userID, baseURL, "password_reset_verification", passwordResetLinkExpireTime)
+
+	if err != nil {
+		h.mailService.GetMailLogger().Warnf("verify token generation to reset password failed for userId=%s: %v", user.ID, err.Error())
+	}
+
+	// password reset mail sending
+	if err := h.mailService.SendPasswordResetMail(user.Name, user.Email, verifyLink); err != nil {
+		h.mailService.GetMailLogger().Warnf("send password reset mail to %s mail address failed: %v", user.Email, err.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{Message: "password reset mail send"})
 }
