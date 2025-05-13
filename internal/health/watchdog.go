@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	HealthCheckInterval = 60 * time.Second
+	HealthCheckInterval = 10 * time.Second
 	MaxFailures         = 3
 )
 
