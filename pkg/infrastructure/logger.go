@@ -63,7 +63,7 @@ func SpecialLogger(fileName string, outputType string) *logrus.Logger {
 
 		// If fileName is given, try to open that file
 		if fileName != "" {
-			logFilePath := fmt.Sprintf("logs/" + fileName)
+			logFilePath := fmt.Sprintf("logs/" + fileName + ".log")
 			file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 			if err != nil {
 				Log.WithError(err).Warnf("Failed to open %s, using default main log file", logFilePath)
