@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"github.com/golang-jwt/jwt/v5"
 	"os"
 	"time"
@@ -20,21 +19,14 @@ func GenerateToken(userID uint, expiresIn time.Duration, purpose string) (string
 	return token.SignedString(jwtSecret)
 }
 
-func ValidateToken(tokenStr, purpose string) (uint, error) {
+func ValidateToken(tokenStr, purpose string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil
 	})
 
-	if err != nil || !token.Valid {
-		return 0, err
+	if err != nil {
+		return nil, err
 	}
 
-	claims := token.Claims.(jwt.MapClaims)
-
-	if claims["type"] != purpose {
-		return 0, errors.New("invalid token type")
-	}
-
-	userID := uint(claims["user_id"].(float64))
-	return userID, nil
+	return token, nil
 }
