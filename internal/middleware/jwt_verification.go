@@ -13,7 +13,7 @@ func JWTVerification(purpose string) fiber.Handler {
 		tokenStr := c.Params("token")
 
 		// Token check
-		token, err := config.ResolveToken(tokenStr, purpose)
+		token, err := config.ResolveToken(tokenStr)
 
 		if err != nil || !token.Valid {
 			return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{Error: "Invalid or expired link"})
