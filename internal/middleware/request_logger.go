@@ -7,14 +7,18 @@ import (
 )
 
 var (
-	logFileName       = "server"
-	logFileOutputType = "file"
+	logFileName = "server"
 )
 
 func RequestLogger() fiber.Handler {
+	file, err := infrastructure.FileOpener(logFileName)
+
+	if err != nil {
+		file = infrastructure.Log.Out
+	}
 	return logger.New(logger.Config{
 		Format:     "[${time}] ${status} - ${method} ${path} - ${latency}\n",
 		TimeFormat: "2006-01-02 15:04:05",
-		Output:     infrastructure.SpecialLogger(logFileName, logFileOutputType).Out,
+		Output:     file,
 	})
 }
