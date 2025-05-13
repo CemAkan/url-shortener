@@ -48,7 +48,7 @@ func (s *mailService) VerifyLinkGenerator(userID uint, baseURL, subject string, 
 		return "", err
 	}
 
-	return baseURL + "/verify/" + token, nil
+	return baseURL + "/" + token, nil
 
 }
 
