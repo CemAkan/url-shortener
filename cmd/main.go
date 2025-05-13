@@ -49,7 +49,7 @@ func main() {
 	go job.StartClickFlushJob(clickFlusher, 1*time.Minute)
 
 	go system.HandleSignals(cancel)
-	go health.StartWatchdog(ctx, cancel)
+	go health.StartWatchdog(ctx)
 
 	go startServer(appFiber, cancel)
 

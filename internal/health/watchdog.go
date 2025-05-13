@@ -16,7 +16,7 @@ var (
 )
 
 // StartWatchdog monitors DB & Redis health and cancels ctx when threshold exceeded
-func StartWatchdog(ctx context.Context, cancel context.CancelFunc) {
+func StartWatchdog(ctx context.Context) {
 	ticker := time.NewTicker(HealthCheckInterval)
 	defer ticker.Stop()
 
