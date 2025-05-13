@@ -6,6 +6,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/domain/request"
 	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/gofiber/fiber/v2"
+	"time"
 )
 
 type AuthHandler struct {
@@ -72,7 +73,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	// generate jwt token
-	token, err := config.GenerateJWT(user.ID)
+	token, err := config.GenerateJWT(user.ID, time.Duration(24*time.Hour))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: "failed to generate token"})
 	}
