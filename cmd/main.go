@@ -42,7 +42,7 @@ func main() {
 	authHandler := delivery.NewAuthHandler(userService, mailService)
 
 	//verification
-	verificationHandler := delivery.NewVerificationHandler(userService, mailService)
+	verificationHandler := delivery.NewVerificationHandler(userService)
 
 	//URL
 	urlRepo := repository.NewURLRepository()
