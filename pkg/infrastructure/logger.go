@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -8,8 +9,7 @@ import (
 )
 
 var Log = logrus.New()
-var ServerLogOutput io.Writer
-var FlusherLog = logrus.New()
+var mainLogFile io.Writer
 
 func InitLogger() {
 
@@ -20,6 +20,9 @@ func InitLogger() {
 
 	// app.log file opener and creator if it not exist
 	appFile, err := os.OpenFile("logs/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+
+	//set mainLogFile
+	mainLogFile = appFile
 
 	if err != nil {
 		Log.Warn("failed to open log file, defaulting open stdout only")
@@ -37,22 +40,6 @@ func InitLogger() {
 		ForceColors:     false,
 	})
 
-	serverFile, err := os.OpenFile("logs/server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		Log.Warn("Failed to open server log file, use app log file")
-		ServerLogOutput = appFile
-	} else {
-		ServerLogOutput = serverFile
-	}
-
-	flusherFile, err := os.OpenFile("logs/flusher.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		Log.Warn("Failed to open server log file, use app log file")
-		FlusherLog.SetOutput(appFile)
-	} else {
-		FlusherLog.SetOutput(flusherFile)
-	}
-
 	Log.SetLevel(logrus.InfoLevel)
 
 	//formatter
@@ -62,4 +49,45 @@ func InitLogger() {
 		ForceColors:     false,
 	})
 
+}
+
+// SpecialLogger creates special *logrus.Logger objects with fileName and outputType (file|stdout) parameters
+func SpecialLogger(fileName string, outputType string) *logrus.Logger {
+	logger := logrus.New()
+	var output io.Writer
+
+	switch outputType {
+	case "file":
+		// Use mainLogFile as fallback
+		output = mainLogFile
+
+		// If fileName is given, try to open that file
+		if fileName != "" {
+			logFilePath := fmt.Sprintf("logs/" + fileName)
+			file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+			if err != nil {
+				Log.WithError(err).Warnf("Failed to open %s, using default main log file", logFilePath)
+			} else {
+				output = file
+			}
+		}
+
+	case "stdout":
+		output = os.Stdout
+
+	default:
+		Log.Warnf("Unknown outputType '%s', falling back to mainLogFile", outputType)
+		output = Log.Out
+	}
+
+	// Configure logger
+	logger.SetOutput(output)
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: time.RFC3339,
+		ForceColors:     false,
+	})
+
+	return logger
 }
