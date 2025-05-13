@@ -6,6 +6,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/CemAkan/url-shortener/internal/utils"
 	"github.com/gofiber/fiber/v2"
+	"strings"
 )
 
 type URLHandler struct {
@@ -115,6 +116,11 @@ func (h *URLHandler) Redirect(c *fiber.Ctx) error {
 
 	//daily click increment
 	go utils.TrackClick(ctx, code)
+
+	//http-s check
+	if !strings.HasPrefix(originalURL, "http://") && !strings.HasPrefix(originalURL, "https://") {
+		originalURL = "https://" + originalURL
+	}
 
 	return c.Redirect(originalURL, fiber.StatusFound)
 }
