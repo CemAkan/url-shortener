@@ -7,7 +7,7 @@ import (
 	"github.com/swaggo/fiber-swagger"
 )
 
-func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandler, adminHandler *AdminHandler) {
+func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandler, adminHandler *AdminHandler, verificationHandler *VerificationHandler) {
 	api := app.Group("/api")
 
 	// Swagger UI Route
@@ -23,6 +23,9 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 
 	//redirect
 	app.Get("/:code", urlHandler.Redirect)
+
+	//verification
+	app.Get("/verify/:token", middleware.JWTVerification("email_verification"), verificationHandler.VerifyMailAddress)
 
 	//user
 	api.Post("/register", authHandler.Register)
