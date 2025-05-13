@@ -8,22 +8,19 @@ import (
 
 type VerificationHandler struct {
 	userService app.UserService
-	mailService app.MailService
 }
 
 // NewVerificationHandler generate a new VerificationHandler struct with given UserService and mailService inputs
-func NewVerificationHandler(userService app.UserService, mailService app.MailService) *VerificationHandler {
+func NewVerificationHandler(userService app.UserService) *VerificationHandler {
 	return &VerificationHandler{
 		userService: userService,
-		mailService: mailService,
 	}
 }
 
 func (h *VerificationHandler) VerifyMailAddress(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(uint)
-	_, err := h.userService.GetByID(userID)
 
-	if err != nil {
+	if _, err := h.userService.GetByID(userID); err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(response.ErrorResponse{Error: "User not found"})
 	}
 
@@ -31,5 +28,25 @@ func (h *VerificationHandler) VerifyMailAddress(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: "Database error"})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(response.SuccessResponse{Message: "mail confirmation successfully"})
+	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{Message: "mail confirmation successfully"})
+}
+
+func (h *VerificationHandler) ResetPassword(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(uint)
+
+	if _, err := h.userService.GetByID(userID); err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(response.ErrorResponse{Error: "User not found"})
+	}
+
+	var req string //new password
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: "invalid request"})
+	}
+
+	if err := h.userService.PasswordUpdate(userID, req); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: "password update fail"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{Message: "password updated"})
 }
