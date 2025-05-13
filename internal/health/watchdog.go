@@ -8,7 +8,11 @@ import (
 
 const (
 	HealthCheckInterval = 10 * time.Second
-	MaxFailures         = 3
+)
+
+var (
+	logFileName       = "health"
+	logFileOutputType = "file"
 )
 
 // StartWatchdog monitors DB & Redis health and cancels ctx when threshold exceeded
@@ -16,16 +20,18 @@ func StartWatchdog(ctx context.Context, cancel context.CancelFunc) {
 	ticker := time.NewTicker(HealthCheckInterval)
 	defer ticker.Stop()
 
-	infrastructure.Log.Info("Health Watchdog started")
+	logger := infrastructure.SpecialLogger(logFileName, logFileOutputType)
+
+	logger.Info("Health Watchdog started")
 
 	for {
 		select {
 		case <-ctx.Done():
-			infrastructure.Log.Info("Watchdog context cancelled, stopping health checks")
+			logger.Info("Watchdog context cancelled, stopping health checks")
 			return
 
 		case <-ticker.C:
-			infrastructure.Log.Info("Watchdog tick: running health checks")
+			logger.Info("Watchdog tick: running health checks")
 
 			SetDBStatus(checkDBHealth(ctx))
 			SetRedisStatus(checkRedisHealth(ctx))

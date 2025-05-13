@@ -7,6 +7,11 @@ import (
 	"github.com/CemAkan/url-shortener/pkg/infrastructure"
 )
 
+var (
+	logFileName       = "flusher"
+	logFileOutputType = "file"
+)
+
 type ClickFlusherService struct {
 	repo repository.URLRepository
 }
@@ -45,6 +50,6 @@ func (s *ClickFlusherService) FlushClicks() {
 			continue
 		}
 
-		infrastructure.FlusherLog.Infof("Flushed %d clicks for %s", count, code)
+		infrastructure.SpecialLogger(logFileName, logFileOutputType).Infof("Flushed %d clicks for %s", count, code)
 	}
 }
