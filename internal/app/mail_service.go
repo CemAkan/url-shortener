@@ -8,7 +8,11 @@ import (
 	"time"
 )
 
-var mailLogger *logrus.Logger
+var (
+	mailVerificationMailSubject string = "Welcome URL-Shortener! Please confirm your email address"
+	passwordResetMailSubject    string = "Reset your URL-Shortener password"
+	mailLogger                  *logrus.Logger
+)
 
 func init() {
 	mailLogger = infrastructure.SpecialLogger("mail", "file")
@@ -30,8 +34,8 @@ func NewMailService() MailService {
 
 // SendVerificationMail sends email to verify mail address
 func (s *mailService) SendVerificationMail(name, email, verifyLink string) error {
-	subject := "Welcome URL-Shortener! Please confirm your email address"
-	if err := infrastructure.Mail.Send(email, subject, utils.GenerateEmailVerification(name, verifyLink)); err != nil {
+
+	if err := infrastructure.Mail.Send(email, mailVerificationMailSubject, utils.GenerateEmailVerification(name, verifyLink)); err != nil {
 		return err
 	}
 	return nil
@@ -51,9 +55,8 @@ func (s *mailService) VerifyLinkGenerator(userID uint, baseURL, subject string, 
 //
 
 func (s *mailService) SendPasswordResetMail(name, email, verifyLink string) error {
-	subject := " Reset your URL-Shortener password"
 
-	if err := infrastructure.Mail.Send(email, subject, utils.GenerateResetPasswordEmail(name, verifyLink)); err != nil {
+	if err := infrastructure.Mail.Send(email, passwordResetMailSubject, utils.GenerateResetPasswordEmail(name, verifyLink)); err != nil {
 		return err
 	}
 
