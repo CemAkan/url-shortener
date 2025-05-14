@@ -27,7 +27,9 @@ func main() {
 	infrastructure.InitDB()
 	infrastructure.InitRedis()
 
-	appFiber := fiber.New()
+	appFiber := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
 
 	// Dependency injection
 
