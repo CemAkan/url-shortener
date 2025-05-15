@@ -2,7 +2,9 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
+	"time"
 )
 
 type EmailData struct {
@@ -66,4 +68,21 @@ func RenderEmailTemplate(data EmailData) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+// GenerateResetPasswordEmail returns password reset email body
+func GenerateResetPasswordEmail(username, resetLink string) string {
+	data := EmailData{
+		Title:       "Password Reset Request",
+		Greeting:    fmt.Sprintf("Hello %s,", username),
+		Message:     "You requested to reset your password. Click the button below. This link will expire in 15 minutes.",
+		ButtonText:  "Reset Password",
+		ButtonLink:  resetLink,
+		ShowButton:  true,
+		CompanyName: "CemAkan",
+		Year:        time.Now().Year(),
+	}
+
+	body, _ := RenderEmailTemplate(data)
+	return body
 }
