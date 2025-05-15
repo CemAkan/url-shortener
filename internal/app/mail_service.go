@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/CemAkan/url-shortener/config"
-	"github.com/CemAkan/url-shortener/internal/utils"
+	"github.com/CemAkan/url-shortener/email"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure"
 	"github.com/sirupsen/logrus"
 	"time"
@@ -32,16 +32,41 @@ func NewMailService() MailService {
 	return &mailService{}
 }
 
-// SendVerificationMail sends email to verify mail address
-func (s *mailService) SendVerificationMail(name, email, verifyLink string) error {
-
-	if err := infrastructure.Mail.Send(email, mailVerificationMailSubject, utils.GenerateEmailVerification(name, verifyLink)); err != nil {
+// SendVerificationMail renders verification template and sends email
+func (s *mailService) SendVerificationMail(name, emailAddr, verifyLink string) error {
+	htmlBody, err := email.Render("verify-email", email.EmailData{
+		Title:            "Verify Your Email",
+		VerificationLink: verifyLink,
+	})
+	if err != nil {
 		return err
 	}
+
+	if err := infrastructure.Mail.Send(emailAddr, mailVerificationMailSubject, htmlBody); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// VerifyLinkGenerator generates new verification end of the link
+// SendPasswordResetMail renders reset-password template and sends email
+func (s *mailService) SendPasswordResetMail(name, emailAddr, verifyLink string) error {
+	htmlBody, err := email.Render("reset-password", email.EmailData{
+		Title:            "Reset Your Password",
+		VerificationLink: verifyLink,
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := infrastructure.Mail.Send(emailAddr, passwordResetMailSubject, htmlBody); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// VerifyLinkGenerator generates tokenized link for verification or password reset
 func (s *mailService) VerifyLinkGenerator(userID uint, baseURL, subject string, duration time.Duration) (string, error) {
 	token, err := config.GenerateToken(userID, duration, subject)
 	if err != nil {
@@ -49,21 +74,9 @@ func (s *mailService) VerifyLinkGenerator(userID uint, baseURL, subject string, 
 	}
 
 	return baseURL + "/" + token, nil
-
 }
 
-//
-
-func (s *mailService) SendPasswordResetMail(name, email, verifyLink string) error {
-
-	if err := infrastructure.Mail.Send(email, passwordResetMailSubject, utils.GenerateResetPasswordEmail(name, verifyLink)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetMailLogger return specialized logger for mail service
+// GetMailLogger returns mail service logger
 func (s *mailService) GetMailLogger() *logrus.Logger {
 	return mailLogger
 }
