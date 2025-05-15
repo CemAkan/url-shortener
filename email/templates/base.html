@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ .Title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+</head>
+<body style="margin:0;padding:0;font-family:'Segoe UI','Inter',sans-serif;background:#f4f4f4;color:#333;">
+
+<center style="width:100%;background:#f4f4f4;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+            <td align="center">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="background:#ffffff;border-radius:12px;padding:32px;">
+                    {{ template "logo" . }}
+                    {{ template "content" . }}
+                    {{ template "footer" . }}
+                </table>
+            </td>
+        </tr>
+    </table>
+</center>
+
+</body>
+</html>
