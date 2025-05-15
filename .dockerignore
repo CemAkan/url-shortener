@@ -15,9 +15,6 @@ bin/
 tmp/
 dist/
 
-# Dependency lock (go.sum local değişebilir)
-go.sum
-
 # Local environment files
 .env
 *.local
