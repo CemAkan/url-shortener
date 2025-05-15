@@ -2,7 +2,7 @@ package email
 
 import (
 	"embed"
-	"fmt"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure"
 )
 
 //go:embed **/base.html
@@ -19,14 +19,13 @@ func init() {
 	for _, path := range candidates {
 		_, err := baseFile.Open(path)
 		if err == nil {
-			fmt.Println("✅ Template base path detected:", path)
 			TemplateBasePath = path[:len(path)-len("base.html")]
 			break
 		}
 	}
 
 	if TemplateBasePath == "" {
-		panic("❌ Could not detect template base path")
+		infrastructure.Log.Fatalf("Could not detect template base path")
 	}
 }
 
