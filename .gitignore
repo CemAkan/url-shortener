@@ -38,3 +38,6 @@ Thumbs.db
 .idea/
 .vscode/
 
+# swagger auto-generate files
+/docs/*
+!/docs/.gitkeep
