@@ -86,3 +86,20 @@ func GenerateResetPasswordEmail(username, resetLink string) string {
 	body, _ := RenderEmailTemplate(data)
 	return body
 }
+
+// GenerateEmailVerification returns email verification body
+func GenerateEmailVerification(username, verifyLink string) string {
+	data := EmailData{
+		Title:       "Email Verification",
+		Greeting:    fmt.Sprintf("Welcome %s!", username),
+		Message:     "Please verify your email by clicking the button below.",
+		ButtonText:  "Verify Email",
+		ButtonLink:  verifyLink,
+		ShowButton:  true,
+		CompanyName: "CemAkan",
+		Year:        time.Now().Year(),
+	}
+
+	body, _ := RenderEmailTemplate(data)
+	return body
+}
