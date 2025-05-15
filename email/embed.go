@@ -2,11 +2,33 @@ package email
 
 import (
 	"embed"
-	"io/fs"
+	"fmt"
 )
 
-//go:embed templates/**/*.html
-var embeddedTemplates embed.FS
+//go:embed **/base.html
+var baseFile embed.FS
 
-// TemplatesFS exposes embedded templates with FS interface.
-var TemplatesFS fs.FS = embeddedTemplates
+var TemplateBasePath string
+
+func init() {
+	candidates := []string{
+		"templates/base.html",
+		"email/templates/base.html",
+	}
+
+	for _, path := range candidates {
+		_, err := baseFile.Open(path)
+		if err == nil {
+			fmt.Println("✅ Template base path detected:", path)
+			TemplateBasePath = path[:len(path)-len("base.html")]
+			break
+		}
+	}
+
+	if TemplateBasePath == "" {
+		panic("❌ Could not detect template base path")
+	}
+}
+
+//go:embed **/*
+var TemplatesFS embed.FS
