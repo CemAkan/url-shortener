@@ -2,7 +2,7 @@ package email
 
 import (
 	"bytes"
-	"fmt"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure"
 	"html/template"
 	"strings"
 )
@@ -20,8 +20,7 @@ func Render(templateName string, data EmailData) (string, error) {
 		TemplateBasePath + "transactional/" + templateName + ".html",
 	}
 
-	// Debug log:
-	fmt.Println("🟢 Parsing Templates:", strings.Join(files, ", "))
+	infrastructure.Log.Infof("Parsing Templates: %s", strings.Join(files, ", "))
 
 	tmpl, err := template.New("base.html").ParseFS(TemplatesFS, files...)
 	if err != nil {
