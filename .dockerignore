@@ -1,0 +1,23 @@
+# Git files
+.git
+.gitignore
+
+# IDE configs
+.idea/
+.vscode/
+*.swp
+
+# Mac OS
+.DS_Store
+
+# Go build artifacts
+bin/
+tmp/
+dist/
+
+# Dependency lock (go.sum local değişebilir)
+go.sum
+
+# Local environment files
+.env
+*.local
