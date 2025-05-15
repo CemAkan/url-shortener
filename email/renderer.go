@@ -2,7 +2,6 @@ package email
 
 import (
 	"bytes"
-	"github.com/CemAkan/url-shortener/email"
 	"html/template"
 )
 
@@ -12,7 +11,7 @@ type EmailData struct {
 }
 
 func Render(templateName string, data EmailData) (string, error) {
-	tmpl, err := template.New("base.html").ParseFS(email.TemplatesFS,
+	tmpl, err := template.New("base.html").ParseFS(TemplatesFS,
 		"templates/base.html",
 		"templates/components/logo.html",
 		"templates/components/footer.html",
