@@ -38,5 +38,3 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Go modules
-go.sum
