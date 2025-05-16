@@ -3,8 +3,10 @@ package health
 import "sync/atomic"
 
 var (
-	dbStatus    atomic.Int32 // 0 = down, 1 = up
-	redisStatus atomic.Int32 // 0 = down, 1 = up
+	// 0 = down, 1 = up
+	dbStatus    atomic.Int32
+	redisStatus atomic.Int32
+	emailStatus atomic.Int32
 )
 
 // SetDBStatus sets database status atomic safe
@@ -25,6 +27,15 @@ func SetRedisStatus(up bool) {
 	}
 }
 
+// SetEmailStatus sets mail service status atomic safe
+func SetEmailStatus(up bool) {
+	if up {
+		emailStatus.Store(1)
+	} else {
+		emailStatus.Store(0)
+	}
+}
+
 // GetDBStatus returns database status from atomic dbStatus status var
 func GetDBStatus() bool {
 	return dbStatus.Load() == 1
@@ -33,4 +44,9 @@ func GetDBStatus() bool {
 // GetRedisStatus returns redis status from atomic redisStatus status var
 func GetRedisStatus() bool {
 	return redisStatus.Load() == 1
+}
+
+// GetEmailStatus returns email service status from atomic emailStatus status var
+func GetEmailStatus() bool {
+	return emailStatus.Load() == 1
 }
