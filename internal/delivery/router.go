@@ -19,7 +19,7 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 	// public routes (no need jwt)
 
 	//mail assets
-	app.Static("/assets", "../email/assets")
+	api.Static("/assets", "../../email/assets")
 
 	//health
 	api.Get("/health", Health)
