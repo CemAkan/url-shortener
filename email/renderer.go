@@ -14,15 +14,16 @@ type EmailData struct {
 	VerificationLink string
 	LogoURL          string
 	HeaderURL        string
+	ButtonText       string
 }
 
-func Render(templateName string, data EmailData) (string, error) {
+func Render(data EmailData) (string, error) {
 	files := []string{
 		TemplateBasePath + "base.html",
 		TemplateBasePath + "components/logo.html",
-		TemplateBasePath + "components/header.html", // <== EKLENDİ!
+		TemplateBasePath + "components/header.html",
 		TemplateBasePath + "components/footer.html",
-		TemplateBasePath + "transactional/" + templateName + ".html",
+		TemplateBasePath + "transactional/content.html",
 	}
 
 	infrastructure.Log.Infof("Parsing Templates: %s", strings.Join(files, ", "))
