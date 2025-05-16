@@ -41,8 +41,8 @@ func (s *mailService) SendVerificationMail(name, baseUrl, emailAddr, verifyLink 
 		Greeting:         fmt.Sprintf("Hello %s,", name),
 		Message:          mailVerificationMailSubject,
 		VerificationLink: verifyLink,
-		LogoURL:          baseUrl + "api/assets/logo.svg",
-		HeaderURL:        baseUrl + "api/assets/header.png",
+		LogoURL:          baseUrl + "/api/assets/logo.svg",
+		HeaderURL:        baseUrl + "/api/assets/header.png",
 	})
 	if err != nil {
 		return err
@@ -58,8 +58,8 @@ func (s *mailService) SendPasswordResetMail(name, baseUrl, emailAddr, verifyLink
 		Greeting:         fmt.Sprintf("Hello %s,", name),
 		Message:          passwordResetMailSubject,
 		VerificationLink: verifyLink,
-		LogoURL:          baseUrl + "/assets/logo.svg",
-		HeaderURL:        baseUrl + "/assets/header.png",
+		LogoURL:          baseUrl + "/api/assets/logo.svg",
+		HeaderURL:        baseUrl + "/api/assets/header.png",
 	})
 	if err != nil {
 		return err
