@@ -20,6 +20,7 @@ func Render(templateName string, data EmailData) (string, error) {
 	files := []string{
 		TemplateBasePath + "base.html",
 		TemplateBasePath + "components/logo.html",
+		TemplateBasePath + "components/header.html", // <== EKLENDİ!
 		TemplateBasePath + "components/footer.html",
 		TemplateBasePath + "transactional/" + templateName + ".html",
 	}
