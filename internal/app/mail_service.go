@@ -36,36 +36,38 @@ func NewMailService() MailService {
 // SendVerificationMail renders verification template and sends email
 func (s *mailService) SendVerificationMail(name, baseUrl, emailAddr, verifyLink string) error {
 
-	htmlBody, err := email.Render("verify-email", email.EmailData{
+	htmlBody, err := email.Render(email.EmailData{
 		Title:            "Verify Your Email",
 		Greeting:         fmt.Sprintf("Hello %s,", name),
 		Message:          mailVerificationMailSubject,
 		VerificationLink: verifyLink,
 		LogoURL:          baseUrl + "/api/assets/logo.svg",
 		HeaderURL:        baseUrl + "/api/assets/header.png",
+		ButtonText:       "✔️ Verify Your Mail",
 	})
 	if err != nil {
 		return err
 	}
 
-	return infrastructure.Mail.Send(emailAddr, mailVerificationMailSubject, htmlBody)
+	return infrastructure.Mail.Send(emailAddr, "Verify Your Email", htmlBody)
 }
 
 // SendPasswordResetMail renders reset-password template and sends email
 func (s *mailService) SendPasswordResetMail(name, baseUrl, emailAddr, verifyLink string) error {
-	htmlBody, err := email.Render("reset-password", email.EmailData{
+	htmlBody, err := email.Render(email.EmailData{
 		Title:            "Reset Your Password",
 		Greeting:         fmt.Sprintf("Hello %s,", name),
 		Message:          passwordResetMailSubject,
 		VerificationLink: verifyLink,
 		LogoURL:          baseUrl + "/api/assets/logo.svg",
 		HeaderURL:        baseUrl + "/api/assets/header.png",
+		ButtonText:       "🔄 Reset Password",
 	})
 	if err != nil {
 		return err
 	}
 
-	return infrastructure.Mail.Send(emailAddr, passwordResetMailSubject, htmlBody)
+	return infrastructure.Mail.Send(emailAddr, "Reset Your Password", htmlBody)
 }
 
 // VerifyLinkGenerator generates tokenized link for verification or password reset
