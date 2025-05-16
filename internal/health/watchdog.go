@@ -10,21 +10,15 @@ const (
 	HealthCheckInterval = 10 * time.Second
 )
 
-var (
-	logger = infrastructure.SpecialLogger("health", "file")
-)
-
 // StartWatchdog monitors DB & Redis health and cancels ctx when threshold exceeded
 func StartWatchdog(ctx context.Context) {
 	ticker := time.NewTicker(HealthCheckInterval)
 	defer ticker.Stop()
 
-	logger.Info("Health Watchdog started")
-
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Info("Watchdog context cancelled, stopping health checks")
+			infrastructure.Log.Infof("Watchdog context cancelled, stopping health checks")
 			return
 
 		case <-ticker.C:
@@ -32,6 +26,7 @@ func StartWatchdog(ctx context.Context) {
 
 			SetDBStatus(checkDBHealth(ctx))
 			SetRedisStatus(checkRedisHealth(ctx))
+			SetEmailStatus(checkEmailHealth())
 
 		}
 	}
@@ -44,9 +39,8 @@ func checkDBHealth(ctx context.Context) bool {
 	// db health check
 	sqlDB, err := infrastructure.DB.DB()
 	if err != nil || sqlDB.PingContext(ctx) != nil {
-		infrastructure.Log.WithError(err).Error("Database healthcheck failed")
+		infrastructure.Log.WithError(err).Errorf("Database healthcheck failed")
 		healthy = false
-		logger.Warn("Database down")
 	}
 
 	return healthy
@@ -60,9 +54,25 @@ func checkRedisHealth(ctx context.Context) bool {
 	rCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	if err := infrastructure.Redis.Ping(rCtx).Err(); err != nil {
-		infrastructure.Log.WithError(err).Error("Redis healthcheck failed")
+		infrastructure.Log.WithError(err).Errorf("Redis healthcheck failed")
 		healthy = false
-		logger.Warn("Redis down")
+	}
+
+	return healthy
+}
+
+// checkEmailHealth checks email service health
+func checkEmailHealth() bool {
+	healthy := true
+
+	//email service health check
+	conn, err := infrastructure.Mail.Dialer.Dial()
+	if err != nil {
+		infrastructure.Log.WithError(err).Errorf("Mail healthcheck failed")
+		healthy = false
+	}
+	if err := conn.Close(); err != nil {
+		infrastructure.Log.WithError(err).Errorf("Tcp socket close error during mail service healthcheck: %v", err.Error())
 	}
 
 	return healthy
