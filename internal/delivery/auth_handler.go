@@ -54,7 +54,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	baseURL := c.BaseURL()
 
 	//verify link generator
-	verifyLink, err := h.mailService.VerifyLinkGenerator(user.ID, baseURL+"api/verify/mail", "email_verification", mailValidationLinkExpireTime)
+	verifyLink, err := h.mailService.VerifyLinkGenerator(user.ID, baseURL+"/api/verify/mail", "email_verification", mailValidationLinkExpireTime)
 
 	if err != nil {
 		h.mailService.GetMailLogger().Warnf("verify token generation for %s mail address failed: %v", user.Email, err.Error())
@@ -157,7 +157,7 @@ func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 	baseURL := c.BaseURL()
 
 	//verify link generator
-	verifyLink, err := h.mailService.VerifyLinkGenerator(userID, baseURL+"api/verify/password", "password_reset_verification", passwordResetLinkExpireTime)
+	verifyLink, err := h.mailService.VerifyLinkGenerator(userID, baseURL+"/api/verify/password", "password_reset_verification", passwordResetLinkExpireTime)
 
 	if err != nil {
 		h.mailService.GetMailLogger().Warnf("verify token generation to reset password failed for userId=%s: %v", user.ID, err.Error())
