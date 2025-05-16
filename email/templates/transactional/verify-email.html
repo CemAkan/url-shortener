@@ -1,10 +1,10 @@
 {{ define "content" }}
 <table role="presentation" width="100%" style="margin-bottom:24px;">
     <tr>
-        <td style="font-size:20px;font-weight:bold;color:#333;">Welcome to URL-Shortener</td>
+        <td style="font-size:20px;font-weight:bold;color:#333;">{{ .Greeting }}</td>
     </tr>
     <tr>
-        <td style="font-size:14px;color:#555;padding-top:12px;">Manage your links with ease. Simplify, track, and optimize in just a few clicks.</td>
+        <td style="font-size:14px;color:#555;padding-top:12px;">{{ .Message }}</td>
     </tr>
     <tr>
         <td style="padding-top:20px;">
