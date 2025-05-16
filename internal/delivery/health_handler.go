@@ -8,7 +8,7 @@ import (
 
 // Health godoc
 // @Summary Health Check
-// @Description Returns current health status of DB and Redis
+// @Description Returns current health status of DB, Redis and Email services
 // @Tags Health
 // @Success 200 {object} response.HealthStatusResponse
 // @Router /health [get]
@@ -23,8 +23,12 @@ func Health(c *fiber.Ctx) error {
 		redisStatus = "error"
 	}
 
+	emailStatus := "ok"
+	if !health.GetEmailStatus() {
+		emailStatus = "error"
+	}
 	status := "healthy"
-	if dbStatus != "ok" || redisStatus != "ok" {
+	if dbStatus != "ok" || redisStatus != "ok" || emailStatus != "ok" {
 		status = "degraded"
 	}
 
@@ -32,5 +36,6 @@ func Health(c *fiber.Ctx) error {
 		Status:   status,
 		Database: dbStatus,
 		Redis:    redisStatus,
+		Email:    emailStatus,
 	})
 }
