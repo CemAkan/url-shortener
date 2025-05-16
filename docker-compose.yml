@@ -8,6 +8,11 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    volumes:
+      - .:/app
+    networks:
+      - proxy
+      - internal
     depends_on:
       - postgres
       - redis
