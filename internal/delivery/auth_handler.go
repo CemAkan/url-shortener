@@ -61,7 +61,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	}
 
 	// email address verification mail sending
-	if err := h.mailService.SendVerificationMail(user.Name, user.Email, verifyLink); err != nil {
+	if err := h.mailService.SendVerificationMail(user.Name, baseURL, user.Email, verifyLink); err != nil {
 		h.mailService.GetMailLogger().Warnf("send verification mail to %s mail address failed: %v", user.Email, err.Error())
 	}
 
@@ -164,7 +164,7 @@ func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
 	}
 
 	// password reset mail sending
-	if err := h.mailService.SendPasswordResetMail(user.Name, user.Email, verifyLink); err != nil {
+	if err := h.mailService.SendPasswordResetMail(user.Name, baseURL, user.Email, verifyLink); err != nil {
 		h.mailService.GetMailLogger().Warnf("send password reset mail to %s mail address failed: %v", user.Email, err.Error())
 	}
 
