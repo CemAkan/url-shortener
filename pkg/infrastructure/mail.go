@@ -8,7 +8,7 @@ import (
 )
 
 type Mailer struct {
-	dialer *gomail.Dialer
+	Dialer *gomail.Dialer
 	from   string
 }
 
@@ -27,7 +27,7 @@ func InitMail() {
 	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	Mail = &Mailer{
-		dialer: dialer,
+		Dialer: dialer,
 		from:   from,
 	}
 }
@@ -40,6 +40,6 @@ func (m *Mailer) Send(to, subject, body string) error {
 	msg.SetHeader("Subject", subject)
 	msg.SetBody("text/html", body)
 
-	return m.dialer.DialAndSend(msg)
+	return m.Dialer.DialAndSend(msg)
 
 }
