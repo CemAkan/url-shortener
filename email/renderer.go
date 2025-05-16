@@ -9,6 +9,8 @@ import (
 
 type EmailData struct {
 	Title            string
+	Greeting         string
+	Message          string
 	VerificationLink string
 	LogoURL          string
 	HeaderURL        string
