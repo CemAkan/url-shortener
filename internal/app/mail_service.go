@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/email"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure"
@@ -9,8 +10,8 @@ import (
 )
 
 var (
-	mailVerificationMailSubject string = "Welcome URL-Shortener! Please confirm your email address"
-	passwordResetMailSubject    string = "Reset your URL-Shortener password"
+	mailVerificationMailSubject string = "Please verify your email by clicking the button below."
+	passwordResetMailSubject    string = "Click the button below to reset your password. This link will expire in 15 minutes."
 	mailLogger                  *logrus.Logger
 )
 
@@ -19,8 +20,8 @@ func init() {
 }
 
 type MailService interface {
-	SendVerificationMail(name, email, verifyLink string) error
-	SendPasswordResetMail(name, email, verifyLink string) error
+	SendVerificationMail(name, baseUrl, emailAddr, verifyLink string) error
+	SendPasswordResetMail(name, baseUrl, emailAddr, verifyLink string) error
 	VerifyLinkGenerator(userID uint, baseURL, subject string, duration time.Duration) (string, error)
 	GetMailLogger() *logrus.Logger
 }
@@ -33,37 +34,38 @@ func NewMailService() MailService {
 }
 
 // SendVerificationMail renders verification template and sends email
-func (s *mailService) SendVerificationMail(name, emailAddr, verifyLink string) error {
+func (s *mailService) SendVerificationMail(name, baseUrl, emailAddr, verifyLink string) error {
+
 	htmlBody, err := email.Render("verify-email", email.EmailData{
 		Title:            "Verify Your Email",
+		Greeting:         fmt.Sprintf("Hello %s,", name),
+		Message:          mailVerificationMailSubject,
 		VerificationLink: verifyLink,
+		LogoURL:          baseUrl + "/assets/logo.svg",
+		HeaderURL:        baseUrl + "/assets/header.png",
 	})
 	if err != nil {
 		return err
 	}
 
-	if err := infrastructure.Mail.Send(emailAddr, mailVerificationMailSubject, htmlBody); err != nil {
-		return err
-	}
-
-	return nil
+	return infrastructure.Mail.Send(emailAddr, mailVerificationMailSubject, htmlBody)
 }
 
 // SendPasswordResetMail renders reset-password template and sends email
-func (s *mailService) SendPasswordResetMail(name, emailAddr, verifyLink string) error {
+func (s *mailService) SendPasswordResetMail(name, baseUrl, emailAddr, verifyLink string) error {
 	htmlBody, err := email.Render("reset-password", email.EmailData{
 		Title:            "Reset Your Password",
+		Greeting:         fmt.Sprintf("Hello %s,", name),
+		Message:          passwordResetMailSubject,
 		VerificationLink: verifyLink,
+		LogoURL:          baseUrl + "/assets/logo.svg",
+		HeaderURL:        baseUrl + "/assets/header.png",
 	})
 	if err != nil {
 		return err
 	}
 
-	if err := infrastructure.Mail.Send(emailAddr, passwordResetMailSubject, htmlBody); err != nil {
-		return err
-	}
-
-	return nil
+	return infrastructure.Mail.Send(emailAddr, passwordResetMailSubject, htmlBody)
 }
 
 // VerifyLinkGenerator generates tokenized link for verification or password reset
