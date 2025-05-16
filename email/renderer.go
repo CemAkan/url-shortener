@@ -10,6 +10,8 @@ import (
 type EmailData struct {
 	Title            string
 	VerificationLink string
+	LogoURL          string
+	HeaderURL        string
 }
 
 func Render(templateName string, data EmailData) (string, error) {
