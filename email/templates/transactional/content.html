@@ -1,0 +1,15 @@
+{{ define "content" }}
+<table role="presentation" width="100%" style="margin-bottom:24px; text-align:center;">
+  <tr>
+    <td style="font-size:20px;font-weight:bold;color:#333;">{{ .Greeting }}</td>
+  </tr>
+  <tr>
+    <td style="font-size:14px;color:#555;padding-top:12px;">{{ .Message }}</td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:20px;">
+      <a href="{{ .VerificationLink }}" style="background:#28a745;color:#ffffff;padding:12px 24px;border-radius:999px;text-decoration:none;display:inline-block;font-weight:bold;">{{ .ButtonText }}</a>
+    </td>
+  </tr>
+</table>
+{{ end }}
