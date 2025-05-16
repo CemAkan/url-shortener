@@ -14,6 +14,11 @@ RUN go mod download
 # Copy source code
 COPY . .
 
+COPY .env /app/.env
+
+# Copy assets
+COPY ./email/assets /app/email/assets
+
 # Build binary
 RUN go build -o url-shortener ./cmd/main.go
 
