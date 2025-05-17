@@ -2,7 +2,7 @@ package email
 
 import (
 	"bytes"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 	"html/template"
 	"strings"
 )

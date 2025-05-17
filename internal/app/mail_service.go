@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/email"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/mail"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 	"github.com/sirupsen/logrus"
 	"time"
 )

@@ -2,7 +2,7 @@ package job
 
 import (
 	"github.com/CemAkan/url-shortener/internal/app"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 	"time"
 )
 

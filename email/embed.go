@@ -2,7 +2,7 @@ package email
 
 import (
 	"embed"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 )
 
 //go:embed **/base.html

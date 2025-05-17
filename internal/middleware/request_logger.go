@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	logger2 "github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	logger2 "github.com/CemAkan/url-shortener/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )

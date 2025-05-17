@@ -17,8 +17,8 @@ import (
 	"github.com/CemAkan/url-shortener/internal/system"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/db"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/mail"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 	"time"
 )

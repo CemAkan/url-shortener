@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/db"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/mail"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 	"time"
 )
 

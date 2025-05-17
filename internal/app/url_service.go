@@ -7,7 +7,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 	utils2 "github.com/CemAkan/url-shortener/pkg/utils"
 	"strconv"
 	"time"

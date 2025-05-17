@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 )
 
 func DeleteURLCache(code string) {

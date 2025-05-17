@@ -2,7 +2,7 @@ package system
 
 import (
 	"context"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 	"os"
 	"os/signal"
 	"syscall"

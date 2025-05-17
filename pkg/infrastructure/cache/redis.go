@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 	"github.com/CemAkan/url-shortener/config"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/logger"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
