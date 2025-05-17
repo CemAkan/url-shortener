@@ -3,7 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
+	"github.com/CemAkan/url-shortener/internal/infrastructure/cache"
 )
 
 // TrackClick increments short url redis click counter

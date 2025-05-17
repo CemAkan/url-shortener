@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/CemAkan/url-shortener/internal/domain/model"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure/db"
+	"github.com/CemAkan/url-shortener/internal/infrastructure/db"
 	"gorm.io/gorm"
 )
 
