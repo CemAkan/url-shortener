@@ -1,13 +1,14 @@
-package delivery
+package router
 
 import (
 	_ "github.com/CemAkan/url-shortener/docs"
+	"github.com/CemAkan/url-shortener/internal/delivery/http/handler"
 	"github.com/CemAkan/url-shortener/internal/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/swaggo/fiber-swagger"
 )
 
-func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandler, adminHandler *AdminHandler, verificationHandler *VerificationHandler) {
+func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *handler.URLHandler, adminHandler *handler.AdminHandler, verificationHandler *handler.VerificationHandler) {
 	api := app.Group("/api")
 
 	// Swagger UI Route
@@ -22,7 +23,7 @@ func SetupRoutes(app *fiber.App, authHandler *AuthHandler, urlHandler *URLHandle
 	api.Static("/assets", "app/email/assets")
 
 	//health
-	api.Get("/health", Health)
+	api.Get("/health", handler.Health)
 
 	//redirect
 	app.Get("/:code", urlHandler.Redirect)
