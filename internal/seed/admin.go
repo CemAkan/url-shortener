@@ -3,13 +3,13 @@ package seed
 import (
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain/entity"
-	"github.com/CemAkan/url-shortener/internal/repository"
+	"github.com/CemAkan/url-shortener/internal/infrastructure/db"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func SeedAdminUser() {
-	userRepo := repository.NewUserRepository()
+	db := db.DB
 	adminMail := config.GetEnv("ADMIN_EMAIL", "")
 	adminPass := config.GetEnv("ADMIN_PASSWORD", "")
 
@@ -18,7 +18,9 @@ func SeedAdminUser() {
 		return
 	}
 
-	if isExist, _ := userRepo.FindByEmail(adminMail); isExist != nil {
+	var count int64
+	db.Model(&entity.User{}).Where("role = ?", "admin").Count(&count)
+	if count > 0 {
 		logger.Log.Infof("Admin user already exists. Skipping seeding.")
 		return
 	}
@@ -37,7 +39,7 @@ func SeedAdminUser() {
 		IsMailConfirmed: true,
 	}
 
-	if err := userRepo.Create(&admin); err != nil {
+	if err := db.Create(&admin).Error; err != nil {
 		logger.Log.Fatalf("Failed to create admin user: %v", err)
 	}
 
