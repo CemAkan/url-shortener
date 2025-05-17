@@ -1,12 +1,12 @@
 package job
 
 import (
-	"github.com/CemAkan/url-shortener/internal/app"
+	"github.com/CemAkan/url-shortener/internal/service"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"time"
 )
 
-func StartClickFlushJob(flusher *app.ClickFlusherService, interval time.Duration) {
+func StartClickFlushJob(flusher *service.ClickFlusherService, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 

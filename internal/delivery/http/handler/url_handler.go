@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/CemAkan/url-shortener/internal/app"
 	"github.com/CemAkan/url-shortener/internal/domain/request"
 	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/CemAkan/url-shortener/pkg/utils"
@@ -10,10 +9,10 @@ import (
 )
 
 type URLHandler struct {
-	service app.URLService
+	service service.URLService
 }
 
-func NewURLHandler(urlService app.URLService) *URLHandler {
+func NewURLHandler(urlService service.URLService) *URLHandler {
 	return &URLHandler{
 		service: urlService,
 	}

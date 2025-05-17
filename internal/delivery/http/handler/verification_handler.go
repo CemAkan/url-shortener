@@ -1,18 +1,17 @@
 package handler
 
 import (
-	"github.com/CemAkan/url-shortener/internal/app"
 	"github.com/CemAkan/url-shortener/internal/domain/request"
 	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/gofiber/fiber/v2"
 )
 
 type VerificationHandler struct {
-	userService app.UserService
+	userService service.UserService
 }
 
 // NewVerificationHandler generate a new VerificationHandler struct with given UserService and mailService inputs
-func NewVerificationHandler(userService app.UserService) *VerificationHandler {
+func NewVerificationHandler(userService service.UserService) *VerificationHandler {
 	return &VerificationHandler{
 		userService: userService,
 	}

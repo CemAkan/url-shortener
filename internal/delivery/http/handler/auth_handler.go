@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/CemAkan/url-shortener/config"
-	"github.com/CemAkan/url-shortener/internal/app"
 	"github.com/CemAkan/url-shortener/internal/domain/request"
 	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/gofiber/fiber/v2"
@@ -15,12 +14,12 @@ var (
 )
 
 type AuthHandler struct {
-	userService app.UserService
-	mailService app.MailService
+	userService service.UserService
+	mailService service.MailService
 }
 
 // NewAuthHandler creates a new AuthHandler struct with given UserService and MailService inputs
-func NewAuthHandler(userService app.UserService, mailService app.MailService) *AuthHandler {
+func NewAuthHandler(userService service.UserService, mailService service.MailService) *AuthHandler {
 	return &AuthHandler{
 		userService: userService,
 		mailService: mailService,

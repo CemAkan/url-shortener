@@ -1,19 +1,18 @@
 package handler
 
 import (
-	"github.com/CemAkan/url-shortener/internal/app"
 	"github.com/CemAkan/url-shortener/internal/domain/response"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 )
 
 type AdminHandler struct {
-	userService app.UserService
-	urlService  app.URLService
+	userService service.UserService
+	urlService  service.URLService
 }
 
 // NewAdminHandler constructor
-func NewAdminHandler(userService app.UserService, urlService app.URLService) *AdminHandler {
+func NewAdminHandler(userService service.UserService, urlService service.URLService) *AdminHandler {
 	return &AdminHandler{
 		userService: userService,
 		urlService:  urlService,

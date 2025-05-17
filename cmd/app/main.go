@@ -9,7 +9,6 @@ package main
 import (
 	"context"
 	"github.com/CemAkan/url-shortener/config"
-	"github.com/CemAkan/url-shortener/internal/app"
 	"github.com/CemAkan/url-shortener/internal/delivery/http/handler"
 	"github.com/CemAkan/url-shortener/internal/delivery/http/router"
 	"github.com/CemAkan/url-shortener/internal/health"
@@ -38,13 +37,13 @@ func main() {
 	// Dependency injection
 
 	//MAIL
-	mailService := app.NewMailService()
+	mailService := service.NewMailService()
 
 	//USER
 
 	//auth
 	userRepo := repository.NewUserRepository()
-	userService := app.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo)
 	authHandler := handler.NewAuthHandler(userService, mailService)
 
 	//verification
@@ -52,7 +51,7 @@ func main() {
 
 	//URL
 	urlRepo := repository.NewURLRepository()
-	urlService := app.NewURLService(urlRepo)
+	urlService := service.NewURLService(urlRepo)
 	urlHandler := handler.NewURLHandler(urlService)
 
 	adminHandler := handler.NewAdminHandler(userService, urlService)
@@ -63,7 +62,7 @@ func main() {
 	defer cancel()
 
 	//jobs
-	clickFlusher := app.NewClickFlusherService(urlRepo)
+	clickFlusher := service.NewClickFlusherService(urlRepo)
 	go job.StartClickFlushJob(clickFlusher, 1*time.Minute)
 
 	go system.HandleSignals(cancel)
