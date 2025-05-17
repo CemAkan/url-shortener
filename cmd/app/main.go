@@ -15,7 +15,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/infrastructure/cache"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/db"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/mail"
-	job "github.com/CemAkan/url-shortener/internal/jobs"
+	"github.com/CemAkan/url-shortener/internal/jobs"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/internal/seed"
 	"github.com/CemAkan/url-shortener/internal/service"
@@ -57,23 +57,31 @@ func main() {
 	urlService := service.NewURLService(urlRepo)
 	urlHandler := handler.NewURLHandler(urlService)
 
+	//ADMIN
 	adminHandler := handler.NewAdminHandler(userService, urlService)
 
+	//send handlers
 	router.SetupRoutes(appFiber, authHandler, urlHandler, adminHandler, verificationHandler)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	//jobs
 	clickFlusher := service.NewClickFlusherService(urlRepo)
 	go job.StartClickFlushJob(clickFlusher, 1*time.Minute)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	//single handler start
 	go system.HandleSignals(cancel)
+
+	//health watchdog start
 	go health.StartWatchdog(ctx)
 
+	//server start
 	go startServer(appFiber, cancel)
 
-	<-ctx.Done()
+	<-ctx.Done() //chan-block wait
+
+	//graceful shutdown start
 	system.GracefulShutdown(appFiber)
 }
 
