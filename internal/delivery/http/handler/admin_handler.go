@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/CemAkan/url-shortener/internal/domain/response"
+	"github.com/CemAkan/url-shortener/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 )
