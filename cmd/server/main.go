@@ -10,7 +10,8 @@ import (
 	"context"
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/app"
-	"github.com/CemAkan/url-shortener/internal/delivery"
+	"github.com/CemAkan/url-shortener/internal/delivery/http/handler"
+	"github.com/CemAkan/url-shortener/internal/delivery/http/router"
 	"github.com/CemAkan/url-shortener/internal/health"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/cache"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/db"
@@ -44,19 +45,19 @@ func main() {
 	//auth
 	userRepo := repository.NewUserRepository()
 	userService := app.NewUserService(userRepo)
-	authHandler := delivery.NewAuthHandler(userService, mailService)
+	authHandler := handler.NewAuthHandler(userService, mailService)
 
 	//verification
-	verificationHandler := delivery.NewVerificationHandler(userService)
+	verificationHandler := handler.NewVerificationHandler(userService)
 
 	//URL
 	urlRepo := repository.NewURLRepository()
 	urlService := app.NewURLService(urlRepo)
-	urlHandler := delivery.NewURLHandler(urlService)
+	urlHandler := handler.NewURLHandler(urlService)
 
-	adminHandler := delivery.NewAdminHandler(userService, urlService)
+	adminHandler := handler.NewAdminHandler(userService, urlService)
 
-	delivery.SetupRoutes(appFiber, authHandler, urlHandler, adminHandler, verificationHandler)
+	router.SetupRoutes(appFiber, authHandler, urlHandler, adminHandler, verificationHandler)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
