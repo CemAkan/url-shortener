@@ -13,23 +13,23 @@ import (
 // @Success 200 {object} response.HealthStatusResponse
 // @Router /health [get]
 func Health(c *fiber.Ctx) error {
-	dbStatus := "ok"
+	dbStatus := response.StatusHealthy
 	if !health.GetDBStatus() {
-		dbStatus = "error"
+		dbStatus = response.StatusUnhealthy
 	}
 
-	redisStatus := "ok"
+	redisStatus := response.StatusHealthy
 	if !health.GetRedisStatus() {
-		redisStatus = "error"
+		redisStatus = response.StatusUnhealthy
 	}
 
-	emailStatus := "ok"
+	emailStatus := response.StatusHealthy
 	if !health.GetEmailStatus() {
-		emailStatus = "error"
+		emailStatus = response.StatusUnhealthy
 	}
-	status := "healthy"
-	if dbStatus != "ok" || redisStatus != "ok" || emailStatus != "ok" {
-		status = "degraded"
+	status := response.StatusHealthy
+	if dbStatus != response.StatusHealthy || redisStatus != response.StatusHealthy || emailStatus != response.StatusHealthy {
+		status = response.StatusDegraded
 	}
 
 	return c.JSON(response.HealthStatusResponse{

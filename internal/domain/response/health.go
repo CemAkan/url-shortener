@@ -1,8 +1,16 @@
 package response
 
+type Status string
+
+const (
+	StatusHealthy   Status = "healthy"
+	StatusDegraded  Status = "degraded"
+	StatusUnhealthy Status = "unhealthy"
+)
+
 type HealthStatusResponse struct {
-	Status   string `json:"status" example:"healthy"`
-	Database string `json:"database" example:"ok"`
-	Redis    string `json:"redis" example:"ok"`
-	Email    string `json:"email" example:"ok"`
+	Status   Status `json:"status" example:"healthy"`
+	Database Status `json:"database" example:"healthy"`
+	Redis    Status `json:"redis" example:"healthy"`
+	Email    Status `json:"email" example:"healthy"`
 }
