@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/email"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/mail"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -16,7 +17,7 @@ var (
 )
 
 func init() {
-	mailLogger = infrastructure.SpecialLogger("mail", "file")
+	mailLogger = logger.SpecialLogger("mail", "file")
 }
 
 type MailService interface {
@@ -49,7 +50,7 @@ func (s *mailService) SendVerificationMail(name, baseUrl, emailAddr, verifyLink 
 		return err
 	}
 
-	return infrastructure.Mail.Send(emailAddr, "Verify Your Email", htmlBody)
+	return mail.Mail.Send(emailAddr, "Verify Your Email", htmlBody)
 }
 
 // SendPasswordResetMail renders reset-password template and sends email
@@ -67,7 +68,7 @@ func (s *mailService) SendPasswordResetMail(name, baseUrl, emailAddr, verifyLink
 		return err
 	}
 
-	return infrastructure.Mail.Send(emailAddr, "Reset Your Password", htmlBody)
+	return mail.Mail.Send(emailAddr, "Reset Your Password", htmlBody)
 }
 
 // VerifyLinkGenerator generates tokenized link for verification or password reset

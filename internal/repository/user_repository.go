@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/CemAkan/url-shortener/internal/domain/model"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/db"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +23,7 @@ type userRepo struct {
 
 func NewUserRepository() UserRepository {
 	return &userRepo{
-		db: infrastructure.DB,
+		db: db.DB,
 	}
 }
 

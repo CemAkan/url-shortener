@@ -3,7 +3,8 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 )
 
 func DeleteURLCache(code string) {
@@ -13,8 +14,8 @@ func DeleteURLCache(code string) {
 	}
 
 	for _, key := range keys {
-		if err := infrastructure.Redis.Del(context.Background(), key).Err(); err != nil {
-			infrastructure.Log.Warnf("Failed to delete Redis key %s: %v", key, err)
+		if err := cache.Redis.Del(context.Background(), key).Err(); err != nil {
+			logger.Log.Warnf("Failed to delete Redis key %s: %v", key, err)
 		}
 	}
 }

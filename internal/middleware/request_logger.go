@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	logger2 "github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
@@ -11,10 +11,10 @@ var (
 )
 
 func RequestLogger() fiber.Handler {
-	file, err := infrastructure.FileOpener(logFileName)
+	file, err := logger2.FileOpener(logFileName)
 
 	if err != nil {
-		file = infrastructure.Log.Out
+		file = logger2.Log.Out
 	}
 	return logger.New(logger.Config{
 		Format:     "[${time}] ${status} - ${method} ${path} - ${latency}\n",

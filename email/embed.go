@@ -2,7 +2,7 @@ package email
 
 import (
 	"embed"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 )
 
 //go:embed **/base.html
@@ -25,7 +25,7 @@ func init() {
 	}
 
 	if TemplateBasePath == "" {
-		infrastructure.Log.Fatalf("Could not detect template base path")
+		logger.Log.Fatalf("Could not detect template base path")
 	}
 }
 

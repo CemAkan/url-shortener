@@ -2,7 +2,10 @@ package health
 
 import (
 	"context"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/db"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/mail"
 	"time"
 )
 
@@ -18,7 +21,7 @@ func StartWatchdog(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			infrastructure.Log.Infof("Watchdog context cancelled, stopping health checks")
+			logger.Log.Infof("Watchdog context cancelled, stopping health checks")
 			return
 
 		case <-ticker.C:
@@ -37,9 +40,9 @@ func checkDBHealth(ctx context.Context) bool {
 	healthy := true
 
 	// db health check
-	sqlDB, err := infrastructure.DB.DB()
+	sqlDB, err := db.DB.DB()
 	if err != nil || sqlDB.PingContext(ctx) != nil {
-		infrastructure.Log.WithError(err).Errorf("Database healthcheck failed")
+		logger.Log.WithError(err).Errorf("Database healthcheck failed")
 		healthy = false
 	}
 
@@ -53,8 +56,8 @@ func checkRedisHealth(ctx context.Context) bool {
 	//redis health check
 	rCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
-	if err := infrastructure.Redis.Ping(rCtx).Err(); err != nil {
-		infrastructure.Log.WithError(err).Errorf("Redis healthcheck failed")
+	if err := cache.Redis.Ping(rCtx).Err(); err != nil {
+		logger.Log.WithError(err).Errorf("Redis healthcheck failed")
 		healthy = false
 	}
 
@@ -66,13 +69,13 @@ func checkEmailHealth() bool {
 	healthy := true
 
 	//email service health check
-	conn, err := infrastructure.Mail.Dialer.Dial()
+	conn, err := mail.Mail.Dialer.Dial()
 	if err != nil {
-		infrastructure.Log.WithError(err).Errorf("Mail healthcheck failed")
+		logger.Log.WithError(err).Errorf("Mail healthcheck failed")
 		healthy = false
 	}
 	if err := conn.Close(); err != nil {
-		infrastructure.Log.WithError(err).Errorf("Tcp socket close error during mail service healthcheck: %v", err.Error())
+		logger.Log.WithError(err).Errorf("Tcp socket close error during mail service healthcheck: %v", err.Error())
 	}
 
 	return healthy

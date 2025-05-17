@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/internal/utils"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 )
 
 var (
@@ -27,7 +27,7 @@ func (s *ClickFlusherService) FlushClicks() {
 	keys, err := utils.GetAllClickKeys(ctx)
 
 	if err != nil {
-		infrastructure.Log.WithError(err).Error("Failed to get click keys from Redis")
+		logger.Log.WithError(err).Error("Failed to get click keys from Redis")
 		return
 	}
 
@@ -36,20 +36,20 @@ func (s *ClickFlusherService) FlushClicks() {
 
 		count, err := utils.GetDailyClickCount(ctx, code)
 		if err != nil {
-			infrastructure.Log.WithError(err).Warnf("Failed to get count for %s", key)
+			logger.Log.WithError(err).Warnf("Failed to get count for %s", key)
 			continue
 		}
 
 		if err := s.repo.AddToTotalClicks(code, count); err != nil {
-			infrastructure.Log.WithError(err).Errorf("Failed to update DB clicks for %s", code)
+			logger.Log.WithError(err).Errorf("Failed to update DB clicks for %s", code)
 			continue
 		}
 
 		if err := utils.DeleteClickKey(ctx, code); err != nil {
-			infrastructure.Log.WithError(err).Warnf("Failed to delete Redis key %s", key)
+			logger.Log.WithError(err).Warnf("Failed to delete Redis key %s", key)
 			continue
 		}
 
-		infrastructure.SpecialLogger(logFileName, logFileOutputType).Infof("Flushed %d clicks for %s", count, code)
+		logger.SpecialLogger(logFileName, logFileOutputType).Infof("Flushed %d clicks for %s", count, code)
 	}
 }

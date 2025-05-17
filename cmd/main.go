@@ -15,17 +15,20 @@ import (
 	job "github.com/CemAkan/url-shortener/internal/jobs"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/internal/system"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/db"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/mail"
 	"github.com/gofiber/fiber/v2"
 	"time"
 )
 
 func main() {
 	config.LoadEnv()
-	infrastructure.InitMail()
-	infrastructure.InitLogger()
-	infrastructure.InitDB()
-	infrastructure.InitRedis()
+	mail.InitMail()
+	logger.InitLogger()
+	db.InitDB()
+	cache.InitRedis()
 
 	appFiber := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -73,12 +76,12 @@ func main() {
 
 func startServer(app *fiber.App, cancel context.CancelFunc) {
 	port := config.GetEnv("PORT", "3000")
-	infrastructure.Log.Infof("Starting Fiber on port: %s", port)
+	logger.Log.Infof("Starting Fiber on port: %s", port)
 
 	err := app.Listen(":" + port)
 
 	if err != nil {
-		infrastructure.Log.WithError(err).Error("Fiber server failed to start")
+		logger.Log.WithError(err).Error("Fiber server failed to start")
 		cancel()
 	}
 }

@@ -7,7 +7,8 @@ import (
 	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/internal/utils"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 	"strconv"
 	"time"
 )
@@ -95,7 +96,7 @@ func (s *urlService) GetSingleUrlRecord(code string) (*model.URL, int, error) {
 
 	// getting daily click rate from redis
 	clickKey := "clicks:" + code
-	dailyClicks, _ := infrastructure.Redis.Get(context.Background(), clickKey).Int()
+	dailyClicks, _ := cache.Redis.Get(context.Background(), clickKey).Int()
 
 	return url, dailyClicks, nil
 }
@@ -105,7 +106,7 @@ func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, 
 
 	//look at redis to find cache record
 	cacheKey := "code_cache:" + code
-	if originalURL, err := infrastructure.Redis.Get(ctx, cacheKey).Result(); err == nil && originalURL != "" {
+	if originalURL, err := cache.Redis.Get(ctx, cacheKey).Result(); err == nil && originalURL != "" {
 		return originalURL, nil
 	}
 
@@ -124,8 +125,8 @@ func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, 
 
 	// db -> redis resolve redirect mechanism for hot links
 	if dailyClicks >= threshold {
-		if err := infrastructure.Redis.Set(ctx, cacheKey, url.OriginalURL, 24*time.Hour).Err(); err != nil {
-			infrastructure.Log.Printf("Redis cache save error: %v", err.Error())
+		if err := cache.Redis.Set(ctx, cacheKey, url.OriginalURL, 24*time.Hour).Err(); err != nil {
+			logger.Log.Printf("Redis cache save error: %v", err.Error())
 		}
 
 	}

@@ -2,7 +2,7 @@ package system
 
 import (
 	"context"
-	"github.com/CemAkan/url-shortener/pkg/infrastructure"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,7 +13,7 @@ func HandleSignals(cancelFunc context.CancelFunc) {
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 
 	sig := <-sigs
-	infrastructure.Log.Infof("Received signal: %s", sig)
+	logger.Log.Infof("Received signal: %s", sig)
 
 	cancelFunc()
 }
