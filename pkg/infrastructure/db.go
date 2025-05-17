@@ -2,7 +2,9 @@ package infrastructure
 
 import (
 	"fmt"
+	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain/model"
+	"github.com/CemAkan/url-shortener/internal/repository"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -52,4 +54,18 @@ func InitDB() {
 
 	// set global db var
 	DB = database
+}
+
+//
+
+func initAdminRecord() {
+	repository.NewUserRepository().Create(&model.User{
+		Name:            "initial",
+		Surname:         "admin",
+		Email:           config.GetEnv("ADMIN_EMAIL", "iamaidiot@whocannotuseenv.file"),
+		Password:        config.GetEnv("ADMIN_PASSWORD", "hihackerhowareyou123"),
+		IsAdmin:         true,
+		IsMailConfirmed: true,
+	})
+
 }
