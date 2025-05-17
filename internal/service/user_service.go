@@ -153,7 +153,7 @@ func (s *userService) PasswordUpdate(userID uint, newPassword string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 
 	if err != nil {
-		errors.New("assword hashing failure")
+		return errors.New("password hashing failure")
 	}
 
 	user.Password = string(hashedPassword)
