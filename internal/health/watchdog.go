@@ -14,9 +14,17 @@ const (
 	HealthCheckInterval = 10 * time.Second
 )
 
+var (
+	lastMailHealthCheck             time.Time
+	mailHealthCheckCooldownDuration = time.Minute * 5
+)
+
 // StartWatchdog monitors DB & Redis health and cancels ctx when threshold exceeded
 func StartWatchdog(ctx context.Context) {
 	ticker := time.NewTicker(HealthCheckInterval)
+
+	SetEmailStatus(checkEmailHealth()) //initial start
+
 	defer ticker.Stop()
 
 	for {
@@ -30,7 +38,10 @@ func StartWatchdog(ctx context.Context) {
 
 			SetDBStatus(checkDBHealth(ctx))
 			SetRedisStatus(checkRedisHealth(ctx))
-			SetEmailStatus(checkEmailHealth())
+
+			if time.Since(lastMailHealthCheck) < mailHealthCheckCooldownDuration {
+				SetEmailStatus(checkEmailHealth())
+			}
 
 		}
 	}
