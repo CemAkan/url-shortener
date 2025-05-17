@@ -5,28 +5,31 @@ import (
 	"github.com/CemAkan/url-shortener/internal/delivery/http/handler"
 	"github.com/CemAkan/url-shortener/internal/delivery/middleware"
 	"github.com/gofiber/fiber/v2"
-	"github.com/swaggo/fiber-swagger"
+	fiberSwagger "github.com/swaggo/fiber-swagger"
 )
 
 func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *handler.URLHandler, adminHandler *handler.AdminHandler, verificationHandler *handler.VerificationHandler) {
-	api := app.Group("/api")
-
-	// Swagger UI Route
-	api.Get("/docs/*", fiberSwagger.WrapHandler)
+	// implement metrics middleware
+	middleware.PrometheusMiddleware(app)
 
 	// implement log middleware
 	app.Use(middleware.RequestLogger())
 
-	// public routes (no need jwt)
+	// -- public routes (no need jwt) --
+
+	//redirect
+	app.Get("/:code", urlHandler.Redirect)
+
+	api := app.Group("/api")
+
+	// Swagger UI Route
+	api.Get("/docs/*", fiberSwagger.WrapHandler)
 
 	//mail assets
 	api.Static("/assets", "app/email/assets")
 
 	//health
 	api.Get("/health", handler.Health)
-
-	//redirect
-	app.Get("/:code", urlHandler.Redirect)
 
 	//verification
 	api.Get("/verify/mail/:token", middleware.JWTVerification("email_verification"), verificationHandler.VerifyMailAddress)
