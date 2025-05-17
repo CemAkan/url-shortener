@@ -54,16 +54,20 @@ func InitDB() {
 
 	// set global db var
 	DB = database
+
+	//if admin infos given in env call the initial admin record creator
+	if config.GetEnv("ADMIN_EMAIL", "") != "" && config.GetEnv("ADMIN_PASSWORD", "") != "" {
+		initAdminRecord()
+	}
 }
 
-//
-
+// initAdminRecord creates a initial admin record in database
 func initAdminRecord() {
 	repository.NewUserRepository().Create(&model.User{
 		Name:            "initial",
 		Surname:         "admin",
-		Email:           config.GetEnv("ADMIN_EMAIL", "iamaidiot@whocannotuseenv.file"),
-		Password:        config.GetEnv("ADMIN_PASSWORD", "hihackerhowareyou123"),
+		Email:           config.GetEnv("ADMIN_EMAIL", ""),
+		Password:        config.GetEnv("ADMIN_PASSWORD", ""),
 		IsAdmin:         true,
 		IsMailConfirmed: true,
 	})
