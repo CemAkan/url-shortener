@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 	"github.com/CemAkan/url-shortener/config"
-	"github.com/CemAkan/url-shortener/internal/domain/model"
+	"github.com/CemAkan/url-shortener/internal/domain/entity"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"gorm.io/driver/postgres"
@@ -47,7 +47,7 @@ func InitDB() {
 	}
 
 	//auto migration
-	if err := database.AutoMigrate(&model.URL{}, &model.User{}); err != nil {
+	if err := database.AutoMigrate(&entity.URL{}, &entity.User{}); err != nil {
 		logger.Log.Fatalf("db connection error %v", err.Error())
 	}
 
@@ -64,7 +64,7 @@ func InitDB() {
 
 // initAdminRecord creates initial admin record in database
 func initAdminRecord() error {
-	return repository.NewUserRepository().Create(&model.User{
+	return repository.NewUserRepository().Create(&entity.User{
 		Name:            "initial",
 		Surname:         "admin",
 		Email:           config.GetEnv("ADMIN_EMAIL", ""),

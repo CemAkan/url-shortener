@@ -4,19 +4,19 @@ import (
 	"context"
 	"errors"
 	"github.com/CemAkan/url-shortener/config"
-	"github.com/CemAkan/url-shortener/internal/domain/model"
+	"github.com/CemAkan/url-shortener/internal/domain/entity"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/cache"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/pkg/logger"
-	utils2 "github.com/CemAkan/url-shortener/pkg/utils"
+	"github.com/CemAkan/url-shortener/pkg/utils"
 	"strconv"
 	"time"
 )
 
 type URLService interface {
-	Shorten(originalURL string, userID uint, customCode *string) (*model.URL, error)
-	GetUserURLs(userID uint) ([]model.URL, error)
-	GetSingleUrlRecord(code string) (*model.URL, int, error)
+	Shorten(originalURL string, userID uint, customCode *string) (*entity.URL, error)
+	GetUserURLs(userID uint) ([]entity.URL, error)
+	GetSingleUrlRecord(code string) (*entity.URL, int, error)
 	ResolveRedirect(ctx context.Context, code string) (string, error)
 	UpdateUserURL(userID uint, oldCode string, newOriginalURL, newCode *string) error
 	DeleteUserURL(userID uint, code string) error
@@ -34,7 +34,7 @@ func NewURLService(urlRepo repository.URLRepository) URLService {
 }
 
 // Shorten redeclare url address
-func (s *urlService) Shorten(originalURL string, userID uint, customCode *string) (*model.URL, error) {
+func (s *urlService) Shorten(originalURL string, userID uint, customCode *string) (*entity.URL, error) {
 	var code string
 
 	if customCode != nil && *customCode != "" {
@@ -48,7 +48,7 @@ func (s *urlService) Shorten(originalURL string, userID uint, customCode *string
 		code = s.generateUniqueCode()
 	}
 
-	url := &model.URL{
+	url := &entity.URL{
 		Code:        code,
 		OriginalURL: originalURL,
 		UserID:      userID,
@@ -73,7 +73,7 @@ func (s *urlService) isCodeTaken(code string) bool {
 
 func (s *urlService) generateUniqueCode() string {
 	for {
-		code := utils2.GenerateCode(7)
+		code := utils.GenerateCode(7)
 		existing, _ := s.repo.FindByCode(code)
 		if existing == nil || existing.ID == 0 {
 			return code
@@ -82,13 +82,13 @@ func (s *urlService) generateUniqueCode() string {
 }
 
 // GetUserURLs finds all userID related url records
-func (s *urlService) GetUserURLs(userID uint) ([]model.URL, error) {
+func (s *urlService) GetUserURLs(userID uint) ([]entity.URL, error) {
 	return s.repo.FindByUserID(userID)
 
 }
 
 // GetSingleUrlRecord find url record with its daily click rate
-func (s *urlService) GetSingleUrlRecord(code string) (*model.URL, int, error) {
+func (s *urlService) GetSingleUrlRecord(code string) (*entity.URL, int, error) {
 	url, err := s.repo.FindByCode(code)
 	if err != nil || url == nil {
 		return nil, 0, err
@@ -111,7 +111,7 @@ func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, 
 	}
 
 	//get daily click
-	dailyClicks, _ := utils2.GetDailyClickCount(ctx, code)
+	dailyClicks, _ := utils.GetDailyClickCount(ctx, code)
 
 	//look at db to find original record
 	url, err := s.repo.FindByCode(code)
@@ -163,7 +163,7 @@ func (s *urlService) UpdateUserURL(userID uint, oldCode string, newOriginalURL, 
 	}
 
 	// redis cache clean
-	utils2.DeleteURLCache(oldCode)
+	utils.DeleteURLCache(oldCode)
 
 	return s.repo.Update(url)
 }
@@ -178,7 +178,7 @@ func (s *urlService) DeleteUserURL(userID uint, code string) error {
 		return errors.New("unauthorized")
 	}
 
-	utils2.DeleteURLCache(code)
+	utils.DeleteURLCache(code)
 
 	return s.repo.Delete(code)
 }
@@ -194,7 +194,7 @@ func (s *urlService) DeleteUserAllURLs(userID uint) error {
 
 	// Redis key cleanup
 	for _, url := range urls {
-		utils2.DeleteURLCache(url.Code)
+		utils.DeleteURLCache(url.Code)
 	}
 
 	return nil

@@ -2,7 +2,7 @@ package app
 
 import (
 	"errors"
-	"github.com/CemAkan/url-shortener/internal/domain/model"
+	"github.com/CemAkan/url-shortener/internal/domain/entity"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 	"net/mail"
@@ -11,11 +11,11 @@ import (
 )
 
 type UserService interface {
-	Register(email, password, name, surname string) (*model.User, error)
-	Login(email, password string) (*model.User, error)
-	GetByID(id uint) (*model.User, error)
+	Register(email, password, name, surname string) (*entity.User, error)
+	Login(email, password string) (*entity.User, error)
+	GetByID(id uint) (*entity.User, error)
 	DeleteUser(id uint) error
-	ListAllUsers() ([]model.User, error)
+	ListAllUsers() ([]entity.User, error)
 	SetTrueEmailConfirmation(id uint) error
 	PasswordUpdate(userID uint, newPassword string) error
 }
@@ -31,7 +31,7 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 }
 
 // Register checks email existence and save new user record to db with hashed password
-func (s *userService) Register(email, password, name, surname string) (*model.User, error) {
+func (s *userService) Register(email, password, name, surname string) (*entity.User, error) {
 	// email existence checking
 	existing, _ := s.repo.FindByEmail(email)
 
@@ -60,7 +60,7 @@ func (s *userService) Register(email, password, name, surname string) (*model.Us
 		return nil, errors.New("invalid email address")
 	}
 
-	user := &model.User{
+	user := &entity.User{
 		Name:     formatedName,
 		Surname:  formatedSurname,
 		Email:    email,
@@ -76,7 +76,7 @@ func (s *userService) Register(email, password, name, surname string) (*model.Us
 }
 
 // Login checks email existence and its related password's correctness
-func (s *userService) Login(email, password string) (*model.User, error) {
+func (s *userService) Login(email, password string) (*entity.User, error) {
 
 	user, err := s.repo.FindByEmail(email)
 
@@ -92,7 +92,7 @@ func (s *userService) Login(email, password string) (*model.User, error) {
 }
 
 // GetByID return user with its id
-func (s *userService) GetByID(id uint) (*model.User, error) {
+func (s *userService) GetByID(id uint) (*entity.User, error) {
 	return s.repo.FindByID(id)
 }
 
@@ -113,7 +113,7 @@ func (s *userService) DeleteUser(id uint) error {
 }
 
 // ListAllUsers gets all user records
-func (s *userService) ListAllUsers() ([]model.User, error) {
+func (s *userService) ListAllUsers() ([]entity.User, error) {
 	return s.repo.ListAllUsers()
 }
 
