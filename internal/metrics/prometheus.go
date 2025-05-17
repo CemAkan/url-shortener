@@ -34,3 +34,7 @@ var (
 		Buckets: prometheus.DefBuckets,
 	})
 )
+
+func RegisterAll() {
+	prometheus.MustRegister(DBUp, RedisUp, MailUp, ClickCounter, ShortenLatency)
+}
