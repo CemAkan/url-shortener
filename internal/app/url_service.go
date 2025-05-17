@@ -6,9 +6,9 @@ import (
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"github.com/CemAkan/url-shortener/internal/repository"
-	"github.com/CemAkan/url-shortener/internal/utils"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/cache"
 	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
+	utils2 "github.com/CemAkan/url-shortener/pkg/utils"
 	"strconv"
 	"time"
 )
@@ -73,7 +73,7 @@ func (s *urlService) isCodeTaken(code string) bool {
 
 func (s *urlService) generateUniqueCode() string {
 	for {
-		code := utils.GenerateCode(7)
+		code := utils2.GenerateCode(7)
 		existing, _ := s.repo.FindByCode(code)
 		if existing == nil || existing.ID == 0 {
 			return code
@@ -111,7 +111,7 @@ func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, 
 	}
 
 	//get daily click
-	dailyClicks, _ := utils.GetDailyClickCount(ctx, code)
+	dailyClicks, _ := utils2.GetDailyClickCount(ctx, code)
 
 	//look at db to find original record
 	url, err := s.repo.FindByCode(code)
@@ -163,7 +163,7 @@ func (s *urlService) UpdateUserURL(userID uint, oldCode string, newOriginalURL, 
 	}
 
 	// redis cache clean
-	utils.DeleteURLCache(oldCode)
+	utils2.DeleteURLCache(oldCode)
 
 	return s.repo.Update(url)
 }
@@ -178,7 +178,7 @@ func (s *urlService) DeleteUserURL(userID uint, code string) error {
 		return errors.New("unauthorized")
 	}
 
-	utils.DeleteURLCache(code)
+	utils2.DeleteURLCache(code)
 
 	return s.repo.Delete(code)
 }
@@ -194,7 +194,7 @@ func (s *urlService) DeleteUserAllURLs(userID uint) error {
 
 	// Redis key cleanup
 	for _, url := range urls {
-		utils.DeleteURLCache(url.Code)
+		utils2.DeleteURLCache(url.Code)
 	}
 
 	return nil

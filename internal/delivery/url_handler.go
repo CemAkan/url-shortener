@@ -4,7 +4,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/app"
 	"github.com/CemAkan/url-shortener/internal/domain/request"
 	"github.com/CemAkan/url-shortener/internal/domain/response"
-	"github.com/CemAkan/url-shortener/internal/utils"
+	"github.com/CemAkan/url-shortener/pkg/utils"
 	"github.com/gofiber/fiber/v2"
 	"strings"
 )
