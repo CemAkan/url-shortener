@@ -5,6 +5,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/infrastructure/cache"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/db"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/mail"
+	"github.com/CemAkan/url-shortener/internal/metrics"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"time"
 )
@@ -37,6 +38,7 @@ func StartWatchdog(ctx context.Context) {
 
 // checkDBHealth checks database health
 func checkDBHealth(ctx context.Context) bool {
+	metrics.DBUp.Set(1)
 	healthy := true
 
 	// db health check
@@ -44,6 +46,7 @@ func checkDBHealth(ctx context.Context) bool {
 	if err != nil || sqlDB.PingContext(ctx) != nil {
 		logger.Log.WithError(err).Errorf("Database healthcheck failed")
 		healthy = false
+		metrics.DBUp.Set(0)
 	}
 
 	return healthy
@@ -51,6 +54,7 @@ func checkDBHealth(ctx context.Context) bool {
 
 // checkRedisHealth checks redis health
 func checkRedisHealth(ctx context.Context) bool {
+	metrics.RedisUp.Set(1)
 	healthy := true
 
 	//redis health check
@@ -59,6 +63,7 @@ func checkRedisHealth(ctx context.Context) bool {
 	if err := cache.Redis.Ping(rCtx).Err(); err != nil {
 		logger.Log.WithError(err).Errorf("Redis healthcheck failed")
 		healthy = false
+		metrics.RedisUp.Set(0)
 	}
 
 	return healthy
@@ -66,6 +71,7 @@ func checkRedisHealth(ctx context.Context) bool {
 
 // checkEmailHealth checks email service health
 func checkEmailHealth() bool {
+	metrics.MailUp.Set(1)
 	healthy := true
 
 	//email service health check
@@ -73,6 +79,7 @@ func checkEmailHealth() bool {
 	if err != nil {
 		logger.Log.WithError(err).Errorf("Mail healthcheck failed")
 		healthy = false
+		metrics.MailUp.Set(0)
 	}
 	if err := conn.Close(); err != nil {
 		logger.Log.WithError(err).Errorf("Tcp socket close error during mail service healthcheck: %v", err.Error())
