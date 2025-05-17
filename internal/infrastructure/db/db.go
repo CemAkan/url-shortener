@@ -2,9 +2,7 @@ package db
 
 import (
 	"fmt"
-	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain/entity"
-	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -53,24 +51,5 @@ func InitDB() {
 
 	// set global db var
 	DB = database
-
-	//if admin infos given in env call the initial admin record creator
-	if config.GetEnv("ADMIN_EMAIL", "") != "" && config.GetEnv("ADMIN_PASSWORD", "") != "" {
-		if err := initAdminRecord(); err != nil {
-			logger.Log.Fatalf("Initial admin can not create, add it manually to database: %v", err.Error())
-		}
-	}
-}
-
-// initAdminRecord creates initial admin record in database
-func initAdminRecord() error {
-	return repository.NewUserRepository().Create(&entity.User{
-		Name:            "initial",
-		Surname:         "admin",
-		Email:           config.GetEnv("ADMIN_EMAIL", ""),
-		Password:        config.GetEnv("ADMIN_PASSWORD", ""),
-		IsAdmin:         true,
-		IsMailConfirmed: true,
-	})
 
 }
