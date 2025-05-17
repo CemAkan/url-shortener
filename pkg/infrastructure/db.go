@@ -42,13 +42,11 @@ func InitDB() {
 	})
 
 	if err != nil || database == nil {
-		Log.Fatalf("db connection error %v", err.Error())
+		Log.Fatalf("db connection error %v", err)
 	}
 
 	//auto migration
-	err = database.AutoMigrate(&model.URL{}, &model.User{})
-
-	if err != nil {
+	if err := database.AutoMigrate(&model.URL{}, &model.User{}); err != nil {
 		Log.Fatalf("db connection error %v", err.Error())
 	}
 
