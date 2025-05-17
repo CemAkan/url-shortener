@@ -9,7 +9,6 @@ import (
 )
 
 func SeedAdminUser() {
-	db := db.DB
 	adminMail := config.GetEnv("ADMIN_EMAIL", "")
 	adminPass := config.GetEnv("ADMIN_PASSWORD", "")
 
@@ -19,7 +18,7 @@ func SeedAdminUser() {
 	}
 
 	var count int64
-	db.Model(&entity.User{}).Where("role = ?", "admin").Count(&count)
+	db.DB.Model(&entity.User{}).Where("role = ?", "admin").Count(&count)
 	if count > 0 {
 		logger.Log.Infof("Admin user already exists. Skipping seeding.")
 		return
@@ -39,7 +38,7 @@ func SeedAdminUser() {
 		IsMailConfirmed: true,
 	}
 
-	if err := db.Create(&admin).Error; err != nil {
+	if err := db.DB.Create(&admin).Error; err != nil {
 		logger.Log.Fatalf("Failed to create admin user: %v", err)
 	}
 
