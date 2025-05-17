@@ -17,6 +17,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/infrastructure/mail"
 	job "github.com/CemAkan/url-shortener/internal/jobs"
 	"github.com/CemAkan/url-shortener/internal/repository"
+	"github.com/CemAkan/url-shortener/internal/seed"
 	"github.com/CemAkan/url-shortener/internal/service"
 	"github.com/CemAkan/url-shortener/internal/system"
 	"github.com/CemAkan/url-shortener/pkg/logger"
@@ -29,6 +30,7 @@ func main() {
 	mail.InitMail()
 	logger.InitLogger()
 	db.InitDB()
+	seed.SeedAdminUser()
 	cache.InitRedis()
 
 	appFiber := fiber.New(fiber.Config{
