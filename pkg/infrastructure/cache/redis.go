@@ -1,8 +1,9 @@
-package infrastructure
+package cache
 
 import (
 	"context"
 	"github.com/CemAkan/url-shortener/config"
+	"github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -26,9 +27,9 @@ func InitRedis() {
 	err := Redis.Ping(ctx).Err()
 
 	if err != nil {
-		Log.Fatalf("Failed to connect to redis: %v", err)
+		logger.Log.Fatalf("Failed to connect to redis: %v", err)
 	}
 
-	Log.Info("Redis connection established successfully")
+	logger.Log.Info("Redis connection established successfully")
 
 }

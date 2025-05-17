@@ -1,10 +1,11 @@
-package infrastructure
+package db
 
 import (
 	"fmt"
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain/model"
 	"github.com/CemAkan/url-shortener/internal/repository"
+	logger2 "github.com/CemAkan/url-shortener/pkg/infrastructure/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -21,9 +22,9 @@ func InitDB() {
 	)
 
 	//log file
-	dbLogFile, err := FileOpener("database")
+	dbLogFile, err := logger2.FileOpener("database")
 	if err != nil {
-		dbLogFile = mainLogFile
+		dbLogFile = logger.MainLogFile
 	}
 
 	//logger configuration
@@ -42,12 +43,12 @@ func InitDB() {
 	})
 
 	if err != nil || database == nil {
-		Log.Fatalf("db connection error %v", err)
+		logger2.Log.Fatalf("db connection error %v", err)
 	}
 
 	//auto migration
 	if err := database.AutoMigrate(&model.URL{}, &model.User{}); err != nil {
-		Log.Fatalf("db connection error %v", err.Error())
+		logger2.Log.Fatalf("db connection error %v", err.Error())
 	}
 
 	// set global db var
@@ -56,7 +57,7 @@ func InitDB() {
 	//if admin infos given in env call the initial admin record creator
 	if config.GetEnv("ADMIN_EMAIL", "") != "" && config.GetEnv("ADMIN_PASSWORD", "") != "" {
 		if err := initAdminRecord(); err != nil {
-			Log.Fatalf("Initial admin can not create, add it manually to database: %v", err.Error())
+			logger2.Log.Fatalf("Initial admin can not create, add it manually to database: %v", err.Error())
 		}
 	}
 }

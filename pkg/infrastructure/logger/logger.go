@@ -1,4 +1,4 @@
-package infrastructure
+package logger
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 )
 
 var Log = logrus.New()
-var mainLogFile io.Writer
+var MainLogFile io.Writer
 
 func InitLogger() {
 
@@ -21,13 +21,13 @@ func InitLogger() {
 	var err error
 
 	// app.log file opener and creator if it not exist
-	mainLogFile, err = FileOpener("app")
+	MainLogFile, err = FileOpener("app")
 
 	if err != nil {
 		Log.Warn("failed to open log file, defaulting open stdout only")
 		Log.SetOutput(os.Stdout)
 	} else {
-		Log.SetOutput(io.MultiWriter(mainLogFile, os.Stdout))
+		Log.SetOutput(io.MultiWriter(MainLogFile, os.Stdout))
 	}
 
 	Log.SetLevel(logrus.InfoLevel)
@@ -58,7 +58,7 @@ func SpecialLogger(fileName string, outputType string) *logrus.Logger {
 	switch outputType {
 	case "file":
 		// Use mainLogFile as fallback
-		output = mainLogFile
+		output = MainLogFile
 
 		// If fileName is given, try to open that file
 		if fileName != "" {
