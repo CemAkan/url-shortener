@@ -6,6 +6,7 @@ import (
 )
 
 var (
+
 	// DB Health
 	DBUp = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "db_up",
@@ -24,18 +25,20 @@ var (
 		Help: "Mail service connection status (1 = up, 0 = down)",
 	})
 
-	// Click Events
-	ClickCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "shortener_click_total",
-		Help: "Total clicks received for short URLs",
-	}, []string{"code"})
-
 	// URL shortening latency
 	RedirectLatency = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name:    "shortener_shorten_latency_seconds",
 		Help:    "Latency histogram for URL redirecting",
 		Buckets: prometheus.DefBuckets,
 	})
+
+	HTTPRequestTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total HTTP requests processed, labeled by status code",
+		},
+		[]string{"status_code"}, // label listesi burada
+	)
 )
 
 var alreadyRegistered bool
@@ -50,7 +53,7 @@ func RegisterAll() {
 		DBUp,
 		RedisUp,
 		MailUp,
-		ClickCounter,
+		HTTPRequestTotal,
 		RedirectLatency,
 	)
 }
