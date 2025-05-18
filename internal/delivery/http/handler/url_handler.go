@@ -3,12 +3,10 @@ package handler
 import (
 	"github.com/CemAkan/url-shortener/internal/domain/request"
 	"github.com/CemAkan/url-shortener/internal/domain/response"
-	"github.com/CemAkan/url-shortener/internal/metrics"
 	"github.com/CemAkan/url-shortener/internal/service"
 	"github.com/CemAkan/url-shortener/pkg/utils"
 	"github.com/gofiber/fiber/v2"
 	"strings"
-	"time"
 )
 
 type URLHandler struct {
@@ -107,16 +105,9 @@ func (h *URLHandler) GetSingleURL(c *fiber.Ctx) error {
 // @Failure 404 {object} response.ErrorResponse
 // @Router /{code} [get]
 func (h *URLHandler) Redirect(c *fiber.Ctx) error {
-	start := time.Now() // start time
 
 	code := c.Params("code")
 	ctx := c.Context()
-
-	// measure latency
-	defer func() {
-		duration := time.Since(start).Seconds()
-		metrics.RedirectLatency.Observe(duration)
-	}()
 
 	//code resolving
 	originalURL, err := h.service.ResolveRedirect(ctx, code)
