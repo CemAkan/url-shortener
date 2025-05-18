@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/CemAkan/url-shortener/config"
 	_ "github.com/CemAkan/url-shortener/docs/swagger"
 	"github.com/CemAkan/url-shortener/internal/delivery/http/handler"
 	"github.com/CemAkan/url-shortener/internal/delivery/middleware"
@@ -10,8 +11,11 @@ import (
 
 func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *handler.URLHandler, adminHandler *handler.AdminHandler, verificationHandler *handler.VerificationHandler) {
 	// implement metrics middleware
-	middleware.PrometheusMiddleware(app)
+	middleware.PrometheusMiddleware(appFiber)
 
+	if config.GetEnv("METRICS_PROTECT", "false") == "true" {
+		app.Use("/metrics", middleware.IPWhitelistMiddleware())
+	}
 	// implement log middleware
 	app.Use(middleware.RequestLogger())
 
