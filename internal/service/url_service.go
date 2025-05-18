@@ -6,7 +6,6 @@ import (
 	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain/entity"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/cache"
-	"github.com/CemAkan/url-shortener/internal/metrics"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"github.com/CemAkan/url-shortener/pkg/utils"
@@ -51,7 +50,7 @@ func (s *urlService) Shorten(originalURL string, userID uint, customCode *string
 	}
 
 	// if it is api/* or api, generate it
-	if strings.Contains(code, "api/") || code == "api" {
+	if strings.Contains(code, "api/") || code == "api" || code == "metrics" {
 		code = s.generateUniqueCode()
 	}
 
@@ -110,16 +109,6 @@ func (s *urlService) GetSingleUrlRecord(code string) (*entity.URL, int, error) {
 
 // ResolveRedirect translates given short code to original code with cache-db mechanism
 func (s *urlService) ResolveRedirect(ctx context.Context, code string) (string, error) {
-
-	// prometheus latency
-	start := time.Now()
-	defer func() {
-		duration := time.Since(start).Seconds()
-		metrics.RedirectLatency.Observe(duration)
-	}()
-
-	// prometheus click counter
-	metrics.ClickCounter.WithLabelValues(code).Inc()
 
 	//look at redis to find cache record
 	cacheKey := "code_cache:" + code
