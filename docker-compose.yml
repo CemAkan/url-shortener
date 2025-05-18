@@ -37,9 +37,26 @@ services:
     volumes:
       - redisdata:/data
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --rule.file=/etc/prometheus/rules.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    restart: unless-stopped
+
 volumes:
   pgdata:
   redisdata:
+  prometheus_data:
 
 networks:
   proxy:

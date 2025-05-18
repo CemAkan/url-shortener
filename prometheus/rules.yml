@@ -1,0 +1,53 @@
+groups:
+  - name: system_metrics
+    interval: 15s  # rules run interval
+    rules:
+      # trigger alarm in high CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU usage is above 80% for 5 minutes on {{ $labels.instance }}"
+          description: "CPU usage at {{ $value }}% for instance {{ $labels.instance }}"
+
+      # trigger alarm in high memory usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memory usage is above 85% for 5 minutes on {{ $labels.instance }}"
+
+  - name: application_metrics
+    interval: 1m
+    rules:
+      # URL redirect latency alarm
+      - alert: HighRedirectLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="url-shortener"}[5m])) by (le)) > 1
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "95th percentile redirect latency is > 1s"
+
+      # total low-request warn (app may stop)
+      - alert: LowRequestRate
+        expr: sum(rate(http_requests_total{job="url-shortener"}[5m])) < ${ALERT_LOW_REQ_RATE}
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Request rate dropped below 5 requests/sec"
+
+      # total high-request warn
+      - alert: HighRequestRate
+        expr: sum(rate(http_requests_total{job="url-shortener"}[5m])) > ${ALERT_HIGH_REQ_RATE}
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Request rate is above 500 requests/sec"
+          description: "High incoming request rate, possible DDoS or spike"
