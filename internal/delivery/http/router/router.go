@@ -18,13 +18,13 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *h
 		app.Use("api/metrics", middleware.IPWhitelistMiddleware())
 	}
 
+	// Swagger UI Route
+	app.Get("api/docs/*", fiberSwagger.WrapHandler)
+
 	// swagger ip protection check
 	if config.GetEnv("SWAGGER_PROTECT", "true") == "true" {
 		app.Use("api/docs/*", middleware.IPWhitelistMiddleware())
 	}
-
-	// Swagger UI Route
-	app.Get("api/docs/*", fiberSwagger.WrapHandler)
 
 	// implement log middleware
 	app.Use(middleware.RequestLogger())
