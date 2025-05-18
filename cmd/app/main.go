@@ -86,7 +86,7 @@ func main() {
 }
 
 func startServer(app *fiber.App, cancel context.CancelFunc) {
-	port := config.GetEnv("PORT", "3000")
+	port := config.GetEnv("APP_PORT", "3000")
 	logger.Log.Infof("Starting Fiber on port: %s", port)
 
 	err := app.Listen(":" + port)
