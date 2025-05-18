@@ -42,6 +42,6 @@ func GracefulShutdown(app *fiber.App) {
 	logger.Log.Infof("Application shutdown complete. Exiting.")
 
 	//wait to all closings
-	logger.Log.Infof("--- Program will close in 10 seconds ---")
-	time.Sleep(time.Second * 10)
+	logger.Log.Infof("--- Program will close in 5 seconds ---")
+	time.Sleep(time.Second * 5)
 }
