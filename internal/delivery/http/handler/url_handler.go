@@ -56,7 +56,7 @@ func (h *URLHandler) Shorten(c *fiber.Ctx) error {
 // @Description Retrieves all shortened URLs for authenticated user
 // @Tags URL
 // @Produce json
-// @Success 200 {array} model.URL
+// @Success 200 {array} response.URLResponse
 // @Failure 500 {object} response.ErrorResponse
 // @Security BearerAuth
 // @Router /my/urls [get]
