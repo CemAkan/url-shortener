@@ -25,19 +25,21 @@ var (
 		Help: "Mail service connection status (1 = up, 0 = down)",
 	})
 
-	// URL shortening latency
-	RedirectLatency = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:    "shortener_shorten_latency_seconds",
-		Help:    "Latency histogram for URL redirecting",
-		Buckets: prometheus.DefBuckets,
-	})
-
 	HTTPRequestTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "http_requests_total",
-			Help: "Total HTTP requests processed, labeled by status code",
+			Help: "Total HTTP requests processed, labeled by status code and method",
 		},
-		[]string{"status_code"}, // label listesi burada
+		[]string{"status_code", "method"},
+	)
+
+	HTTPRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_seconds",
+			Help:    "Histogram of HTTP request duration in seconds.",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"status_code", "method"},
 	)
 )
 
@@ -54,6 +56,6 @@ func RegisterAll() {
 		RedisUp,
 		MailUp,
 		HTTPRequestTotal,
-		RedirectLatency,
+		HTTPRequestDuration,
 	)
 }
