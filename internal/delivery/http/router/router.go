@@ -5,17 +5,19 @@ import (
 	_ "github.com/CemAkan/url-shortener/docs"
 	"github.com/CemAkan/url-shortener/internal/delivery/http/handler"
 	"github.com/CemAkan/url-shortener/internal/delivery/middleware"
+	"github.com/CemAkan/url-shortener/internal/metrics"
 	"github.com/gofiber/fiber/v2"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 )
 
 func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *handler.URLHandler, adminHandler *handler.AdminHandler, verificationHandler *handler.VerificationHandler) {
 	// implement metrics middleware
-	middleware.PrometheusMiddleware(app)
+	metrics.RegisterAll()
+	middleware.MetricsMiddleware(app)
 
 	// metric ip protection check
 	if config.GetEnv("METRICS_PROTECT", "true") == "true" {
-		app.Use("api/metrics", middleware.IPWhitelistMiddleware())
+		app.Use("/metrics", middleware.IPWhitelistMiddleware())
 	}
 
 	// Swagger UI Route
