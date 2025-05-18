@@ -1,6 +1,9 @@
 package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/CemAkan/url-shortener/internal/delivery/middleware"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 var (
 	// DB Health
@@ -35,6 +38,19 @@ var (
 	})
 )
 
+var alreadyRegistered bool
+
 func RegisterAll() {
-	prometheus.MustRegister(DBUp, RedisUp, MailUp, ClickCounter, RedirectLatency)
+	if alreadyRegistered {
+		return
+	}
+	alreadyRegistered = true
+
+	middleware.CustomRegistry.MustRegister(
+		DBUp,
+		RedisUp,
+		MailUp,
+		ClickCounter,
+		RedirectLatency,
+	)
 }
