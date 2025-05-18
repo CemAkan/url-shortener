@@ -16,11 +16,14 @@ func SeedAdminUser() {
 		logger.Log.Infof("Env not set, skipping admin seeding.")
 		return
 	}
-
-	var count int64
-	db.DB.Model(&entity.User{}).Where("role = ?", "admin").Count(&count)
-	if count > 0 {
-		logger.Log.Infof("Admin user already exists. Skipping seeding.")
+	var exists bool
+	err := db.DB.Model(&entity.User{}).Select("count(*) > 0").Where("is_admin = ?", true).Find(&exists).Error
+	if err != nil {
+		logger.Log.WithError(err).Error("Failed to check admin user")
+		return
+	}
+	if exists {
+		logger.Log.Info("Admin user already exists. Skipping seeding.")
 		return
 	}
 
