@@ -10,10 +10,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var CustomRegistry = prometheus.NewRegistry()
-
-func MetricsMiddleware(app *fiber.App) fiber.Handler {
-	prometheusMiddleware := fiberprometheus.NewWithRegistry(CustomRegistry, "url_shortener", "http", "service", nil)
+func MetricsMiddleware(app *fiber.App, registry *prometheus.Registry) fiber.Handler {
+	prometheusMiddleware := fiberprometheus.NewWithRegistry(registry, "url_shortener", "http", "service", nil)
 	prometheusMiddleware.RegisterAt(app, "/metrics")
 
 	return func(c *fiber.Ctx) error {

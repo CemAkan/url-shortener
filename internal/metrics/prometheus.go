@@ -1,7 +1,6 @@
 package metrics
 
 import (
-	"github.com/CemAkan/url-shortener/internal/delivery/middleware"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -45,13 +44,13 @@ var (
 
 var alreadyRegistered bool
 
-func RegisterAll() {
+func RegisterAll(registry *prometheus.Registry) {
 	if alreadyRegistered {
 		return
 	}
 	alreadyRegistered = true
 
-	middleware.CustomRegistry.MustRegister(
+	registry.MustRegister(
 		DBUp,
 		RedisUp,
 		MailUp,
