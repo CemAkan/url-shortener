@@ -1,25 +1,32 @@
 package middleware
 
 import (
-	"github.com/ansrivas/fiberprometheus/v2"
-	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"time"
 
-	"github.com/CemAkan/url-shortener/internal/metrics"
+	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/CemAkan/url-shortener/internal/metrics"
 )
 
-func MetricsMiddleware(app *fiber.App, registry *prometheus.Registry) fiber.Handler {
-	prometheusMiddleware := fiberprometheus.NewWithRegistry(registry, "url_shortener", "http", "service", nil)
-	prometheusMiddleware.RegisterAt(app, "/metrics")
+// SetupPrometheus sets prometheus custom middleware
+func SetupPrometheus(app *fiber.App, registry *prometheus.Registry) {
+	prom := fiberprometheus.NewWithRegistry(
+		registry,
+		"url_shortener", // namespace
+		"http",          // subsystem
+		"service",       // label name
+		nil,
+	)
+	prom.RegisterAt(app, "/metrics")
 
-	return func(c *fiber.Ctx) error {
+	app.Use(func(c *fiber.Ctx) error {
 		start := time.Now()
-
 		err := c.Next()
-
 		duration := time.Since(start).Seconds()
+
 		status := strconv.Itoa(c.Response().StatusCode())
 		method := c.Method()
 
@@ -27,5 +34,5 @@ func MetricsMiddleware(app *fiber.App, registry *prometheus.Registry) fiber.Hand
 		metrics.HTTPRequestDuration.WithLabelValues(status, method).Observe(duration)
 
 		return err
-	}
+	})
 }
