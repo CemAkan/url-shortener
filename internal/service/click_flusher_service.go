@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/CemAkan/url-shortener/internal/metrics"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"github.com/CemAkan/url-shortener/pkg/utils"
@@ -26,6 +27,8 @@ func (s *ClickFlusherService) FlushClicks() {
 	ctx := context.Background()
 	keys, err := utils.GetAllClickKeys(ctx)
 
+	var totalClicks int //total clicks for prometheus
+
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to get click keys from Redis")
 		return
@@ -40,6 +43,8 @@ func (s *ClickFlusherService) FlushClicks() {
 			continue
 		}
 
+		totalClicks += count
+
 		if err := s.repo.AddToTotalClicks(code, count); err != nil {
 			logger.Log.WithError(err).Errorf("Failed to update DB clicks for %s", code)
 			continue
@@ -52,4 +57,6 @@ func (s *ClickFlusherService) FlushClicks() {
 
 		logger.SpecialLogger(logFileName, logFileOutputType).Infof("Flushed %d clicks for %s", count, code)
 	}
+
+	metrics.ClickCounter.WithLabelValues("redirect_clicks").Add(float64(totalClicks))
 }
