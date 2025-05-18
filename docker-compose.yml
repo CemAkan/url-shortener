@@ -1,92 +1,117 @@
 version: "3.9"
 
 services:
+  # Go application container
   app:
     build: .
     container_name: url-shortener
-    ports:
-      - "${APP_PORT}:3000"        # External port APP_PORT maps to container port 3000
     env_file:
-      - .env
-    volumes:
-      - .:/app
+      - .env                                             # Load environment variables
+    ports:
+      - "${APP_PORT}:3000"                               # Map host APP_PORT to container port 3000
     networks:
-      - proxy
-      - internal
+      - proxy                                            # External-facing network
+      - internal                                         # Internal services network
     depends_on:
       - postgres
       - redis
 
+  # PostgreSQL database
   postgres:
     image: postgres:16-alpine
     container_name: pg-shortener
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+    env_file:
+      - .env                                             # DB_USER, DB_PASSWORD, DB_NAME, DB_PORT
     ports:
-      - "${DB_PORT}:5432"        # External port DB_PORT maps to container port 5432
+      - "${DB_PORT}:5432"                                # Map host DB_PORT to container port 5432
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data                  # Persist database files
 
+  # Redis cache
   redis:
     image: redis:7-alpine
     container_name: redis-shortener
     ports:
-      - "6379:6379"
+      - "6379:6379"                                      # Standard Redis port
     volumes:
-      - redisdata:/data
+      - redisdata:/data                                  # Persist Redis data
 
+  # Prometheus server
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
+    env_file:
+      - .env                                             # ALERT_LOW_REQ_RATE, ALERT_HIGH_REQ_RATE if used in templating
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
-      - prometheus_data:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro   # Main Prometheus config
+      - ./prometheus/rules.tmpl.yml:/etc/prometheus/rules.tmpl.yml:ro   # Templated alert rules
+      - prometheus_data:/prometheus                                  # Persist TSDB
     ports:
-      - "${PROMETHEUS_PORT}:9090"
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --rule.file=/etc/prometheus/rules.yml
-      - --storage.tsdb.path=/prometheus
-      - --web.enable-lifecycle
+      - "${PROMETHEUS_PORT}:9090"                         # Expose Prometheus UI/API
+    command: >
+      sh -c "
+        envsubst < /etc/prometheus/rules.tmpl.yml > /etc/prometheus/rules.yml &&
+        exec prometheus \
+          --config.file=/etc/prometheus/prometheus.yml \
+          --rule.file=/etc/prometheus/rules.yml \
+          --storage.tsdb.path=/prometheus \
+          --web.enable-lifecycle
+      "
     restart: unless-stopped
 
+  # PostgreSQL exporter for Prometheus
   postgres_exporter:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: postgres_exporter
-    environment:
-      DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres:${DB_PORT}/${DB_NAME}?sslmode=disable"
+    env_file:
+      - .env                                             # DATA_SOURCE_NAME built from DB_ vars
     ports:
-      - "9187:9187"
-    restart: unless-stopped
+      - "9187:9187"                                      # Exporter metrics port
     depends_on:
       - postgres
+    restart: unless-stopped
 
+  # Node exporter for host metrics
   node_exporter:
     image: prom/node-exporter:latest
     container_name: node_exporter
-    ports:
-      - "9100:9100"
+    network_mode: "host"                                 # Use host networking for system metrics
     restart: unless-stopped
-    pid: "host"
-    network_mode: "host"
 
+  # Grafana dashboard
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    env_file:
+      - .env                                             # GF_SECURITY_ADMIN_USER/PASSWORD
+    ports:
+      - "${GRAFANA_PORT}:3000"                           # Expose Grafana UI
     depends_on:
       - prometheus
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - grafana_data:/var/lib/grafana                    # Persist Grafana data
+      - ./grafana/provisioning/:/etc/grafana/provisioning/  # Provision datasources & dashboards
       - ./grafana/dashboards/:/etc/grafana/dashboards/
+    restart: unless-stopped
+
+  # Alertmanager for handling Prometheus alerts
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    env_file:
+      - .env                                             # SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, TEAM_EMAIL
+    volumes:
+      - ./prometheus/alertmanager.tmpl.yml:/etc/alertmanager/alertmanager.tmpl.yml:ro  # Alertmanager template
+      - alertmanager_data:/alertmanager              # Persist silences & notifications
     ports:
-      - "${GRAFANA_PORT}:3000"
+      - "9093:9093"                                      # Expose Alertmanager UI/API
+    command: >
+      sh -c "
+        envsubst < /etc/alertmanager/alertmanager.tmpl.yml > /etc/alertmanager/alertmanager.yml &&
+        exec alertmanager \
+          --config.file=/etc/alertmanager/alertmanager.yml \
+          --storage.path=/alertmanager
+      "
     restart: unless-stopped
 
 volumes:
@@ -94,7 +119,8 @@ volumes:
   redisdata:
   prometheus_data:
   grafana_data:
+  alertmanager_data:
 
 networks:
-  proxy:
-  internal:
+  proxy:                                               # External network (e.g., reverse proxy)
+  internal:                                            # Internal service-to-service network
