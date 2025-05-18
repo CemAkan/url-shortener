@@ -20,4 +20,4 @@ scrape_configs:
 
   - job_name: 'url_shortener'
     static_configs:
-      - targets: ['url_shortener_app:${APP_PORT}']
+      - targets: ['app:3000']
