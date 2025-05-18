@@ -11,11 +11,21 @@ import (
 
 func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *handler.URLHandler, adminHandler *handler.AdminHandler, verificationHandler *handler.VerificationHandler) {
 	// implement metrics middleware
-	middleware.PrometheusMiddleware(appFiber)
+	middleware.PrometheusMiddleware(app)
 
-	if config.GetEnv("METRICS_PROTECT", "false") == "true" {
-		app.Use("/metrics", middleware.IPWhitelistMiddleware())
+	// metric ip protection check
+	if config.GetEnv("METRICS_PROTECT", "true") == "true" {
+		app.Use("api/metrics", middleware.IPWhitelistMiddleware())
 	}
+
+	// swagger ip protection check
+	if config.GetEnv("SWAGGER_PROTECT", "true") == "true" {
+		app.Use("api/docs/*", middleware.IPWhitelistMiddleware())
+	}
+
+	// Swagger UI Route
+	app.Get("api/docs/*", fiberSwagger.WrapHandler)
+
 	// implement log middleware
 	app.Use(middleware.RequestLogger())
 
@@ -25,9 +35,6 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *h
 	app.Get("/:code", urlHandler.Redirect)
 
 	api := app.Group("/api")
-
-	// Swagger UI Route
-	api.Get("/docs/*", fiberSwagger.WrapHandler)
 
 	//mail assets
 	api.Static("/assets", "app/email/assets")
