@@ -28,13 +28,13 @@ var (
 	}, []string{"code"})
 
 	// URL shortening latency
-	ShortenLatency = prometheus.NewHistogram(prometheus.HistogramOpts{
+	RedirectLatency = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name:    "shortener_shorten_latency_seconds",
-		Help:    "Latency histogram for URL shortening",
+		Help:    "Latency histogram for URL redirecting",
 		Buckets: prometheus.DefBuckets,
 	})
 )
 
 func RegisterAll() {
-	prometheus.MustRegister(DBUp, RedisUp, MailUp, ClickCounter, ShortenLatency)
+	prometheus.MustRegister(DBUp, RedisUp, MailUp, ClickCounter, RedirectLatency)
 }
