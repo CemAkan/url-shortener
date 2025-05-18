@@ -14,9 +14,10 @@ import (
 func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *handler.URLHandler, adminHandler *handler.AdminHandler, verificationHandler *handler.VerificationHandler) {
 	// implement metrics middleware
 	registry := prometheus.NewRegistry()
+
 	metrics.RegisterAll(registry)
 
-	middleware.MetricsMiddleware(app, registry)
+	middleware.SetupPrometheus(app, registry)
 
 	// metric ip protection check
 	if config.GetEnv("METRICS_PROTECT", "true") == "true" {
