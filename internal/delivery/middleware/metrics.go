@@ -8,6 +8,6 @@ import (
 // PrometheusMiddleware registers /metrics endpoint and middleware for metrics tracking
 func PrometheusMiddleware(app *fiber.App) {
 	prometheus := fiberprometheus.New("url-shortener")
-	prometheus.RegisterAt(app, "/metrics") // exposes at /metrics
-	app.Use(prometheus.Middleware)         // auto-collects metrics
+	prometheus.RegisterAt(app, "/api/metrics") // exposes at /metrics
+	app.Use(prometheus.Middleware)             // auto-collects metrics
 }
