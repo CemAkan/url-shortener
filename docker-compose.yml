@@ -5,7 +5,7 @@ services:
     build: .
     container_name: url-shortener
     ports:
-      - "3000:3000"
+      - "${APP_PORT}:3000"        # External port APP_PORT maps to container port 3000 (Go app port)
     env_file:
       - .env
     volumes:
@@ -25,7 +25,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"        # External port DB_PORT maps to container port 5432
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -33,19 +33,14 @@ services:
     image: redis:7-alpine
     container_name: redis-shortener
     ports:
-      - "6379:6379"
+      - "6379:6379"              # Redis default port
     volumes:
       - redisdata:/data
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    restart: unless-stopped
 
 volumes:
   pgdata:
   redisdata:
+
+networks:
+  proxy:
+  internal:
