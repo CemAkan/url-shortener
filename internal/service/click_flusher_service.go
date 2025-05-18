@@ -26,8 +26,7 @@ func NewClickFlusherService(repo repository.URLRepository) *ClickFlusherService 
 func (s *ClickFlusherService) FlushClicks() {
 	ctx := context.Background()
 	keys, err := utils.GetAllClickKeys(ctx)
-
-	var totalClicks int //total clicks for prometheus
+	var totalClicks int
 
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to get click keys from Redis")
@@ -58,5 +57,5 @@ func (s *ClickFlusherService) FlushClicks() {
 		logger.SpecialLogger(logFileName, logFileOutputType).Infof("Flushed %d clicks for %s", count, code)
 	}
 
-	metrics.ClickCounter.WithLabelValues("redirect_clicks").Add(float64(totalClicks))
+	metrics.HTTPRequestTotal.WithLabelValues("302").Add(float64(totalClicks))
 }
