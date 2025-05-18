@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/CemAkan/url-shortener/config"
-	_ "github.com/CemAkan/url-shortener/docs/swagger"
+	_ "github.com/CemAkan/url-shortener/docs"
 	"github.com/CemAkan/url-shortener/internal/delivery/http/handler"
 	"github.com/CemAkan/url-shortener/internal/delivery/middleware"
 	"github.com/gofiber/fiber/v2"
