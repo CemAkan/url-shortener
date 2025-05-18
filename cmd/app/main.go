@@ -16,7 +16,6 @@ import (
 	"github.com/CemAkan/url-shortener/internal/infrastructure/db"
 	"github.com/CemAkan/url-shortener/internal/infrastructure/mail"
 	"github.com/CemAkan/url-shortener/internal/jobs"
-	"github.com/CemAkan/url-shortener/internal/metrics"
 	"github.com/CemAkan/url-shortener/internal/repository"
 	"github.com/CemAkan/url-shortener/internal/seed"
 	"github.com/CemAkan/url-shortener/internal/service"
@@ -33,8 +32,6 @@ func main() {
 	db.InitDB()
 	seed.SeedAdminUser()
 	cache.InitRedis()
-
-	metrics.RegisterAll()
 
 	appFiber := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
