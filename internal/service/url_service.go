@@ -11,6 +11,7 @@ import (
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"github.com/CemAkan/url-shortener/pkg/utils"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -46,6 +47,11 @@ func (s *urlService) Shorten(originalURL string, userID uint, customCode *string
 		}
 		code = *customCode
 	} else {
+		code = s.generateUniqueCode()
+	}
+
+	// if it is api/* or api, generate it
+	if strings.Contains(code, "api/") || code == "api" {
 		code = s.generateUniqueCode()
 	}
 
