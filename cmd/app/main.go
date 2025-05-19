@@ -22,6 +22,7 @@ import (
 	"github.com/CemAkan/url-shortener/internal/system"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"github.com/gofiber/fiber/v2"
+	"strings"
 	"time"
 )
 
@@ -35,6 +36,12 @@ func main() {
 
 	appFiber := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
+		StrictRouting:         false,
+		CaseSensitive:         true,
+		ProxyHeader:           string(fiber.HeaderXForwardedFor),
+		ReadTimeout:           5 * time.Second,
+		WriteTimeout:          10 * time.Second,
+		TrustedProxies:        strings.Split(config.GetEnv("TRUST_PROXY_CIDR", ""), ","),
 	})
 
 	// Dependency injection
