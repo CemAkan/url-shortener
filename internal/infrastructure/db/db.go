@@ -2,13 +2,13 @@ package db
 
 import (
 	"fmt"
+	"github.com/CemAkan/url-shortener/config"
 	"github.com/CemAkan/url-shortener/internal/domain/entity"
 	"github.com/CemAkan/url-shortener/pkg/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 	"log"
-	"os"
 	"time"
 )
 
@@ -16,7 +16,11 @@ var DB *gorm.DB
 
 func InitDB() {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_NAME"), os.Getenv("POSTGRES_PORT"),
+		config.GetEnv("POSTGRES_HOST", "pg-shortener"),
+		config.GetEnv("POSTGRES_USER", "username"),
+		config.GetEnv("POSTGRES_PASSWORD", "password"),
+		config.GetEnv("POSTGRES_DB", "urlShortener"),
+		config.GetEnv("POSTGRES_PORT", "5432"),
 	)
 
 	//log file
