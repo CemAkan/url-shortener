@@ -1,89 +1,159 @@
 services:
   app:
     build: .
-    image: url-shortener-app
-    container_name: url-shortener
+    container_name: shortener
     env_file: [.env]
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.shortener.rule=Host(`cemakan.com.tr`)"
-      - "traefik.http.routers.shortener.entrypoints=websecure"
-      - "traefik.http.routers.shortener.tls.certresolver=letsencrypt"
-      - "traefik.http.services.shortener.loadbalancer.server.port=3000"
-    networks: [internal, proxy]
+      - "traefik.http.routers.api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.api.priority=10"
+      - "traefik.http.services.api.loadbalancer.server.port=${APP_PORT}"
+    expose:
+      - "${APP_PORT}"
     depends_on:
-      postgres: {condition: service_healthy}
-      redis:    {condition: service_healthy}
-
-  postgres:
-    image: postgres:16-alpine
-    container_name: pg-shortener
-    env_file: [.env]
-    volumes: [pgdata:/var/lib/postgresql/data]
-    healthcheck:
-      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER"]
-      interval: 5s
-      retries: 10
-    networks: [internal]
-
-  redis:
-    image: redis:7-alpine
-    container_name: redis-shortener
-    volumes: [redisdata:/data]
-    healthcheck:
-      test: ["CMD","redis-cli","ping"]
-      interval: 5s
-      retries: 10
-    networks: [internal]
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
-      - prometheus_data:/prometheus
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --web.enable-lifecycle
-    ports: ["${PROMETHEUS_PORT:-9090}:9090"]
-    networks: [internal]
-
-  alertmanager:
-    image: prom/alertmanager:latest
-    container_name: alertmanager
-    volumes:
-      - ./prometheus/generated/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-    ports: ["9093:9093"]
-    networks: [internal]
-
-  postgres_exporter:
-    image: prometheuscommunity/postgres-exporter:latest
-    container_name: postgres_exporter
-    env_file: [.env]
-    environment:
-      PG_EXPORTER_DISABLE_SETTINGS_METRICS: "true"
-    ports: ["9187:9187"]
-    depends_on:
-      postgres: {condition: service_healthy}
-    networks: [internal]
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+      - proxy
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     env_file: [.env]
+    environment:
+      - GF_SERVER_ROOT_URL=/grafana
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    expose:
+      - "3000"
     volumes:
       - grafana_data:/var/lib/grafana
-    ports: ["${GRAFANA_PORT:-3001}:3000"]
     depends_on: [prometheus]
-    networks: [internal, proxy]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`${DOMAIN}`) && PathPrefix(`/grafana`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.grafana.priority=100"
+      - "traefik.http.routers.grafana.middlewares=grafana-auth,grafana-ip"
+      - "traefik.http.middlewares.grafana-auth.basicauth.users=${BASIC_AUTH_USERS}"
+      - "traefik.http.middlewares.grafana-ip.ipallowlist.sourcerange=${IP_WHITELIST}"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    networks:
+      - internal
+      - proxy
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    env_file: [.env]
+    expose:
+      - "9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.route-prefix=/prometheus"
+      - "--web.external-url=https://${DOMAIN}/prometheus"
+      - "--web.enable-lifecycle"
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.prom.rule=Host(`${DOMAIN}`) && PathPrefix(`/prometheus`)"
+    - "traefik.http.routers.prom.entrypoints=websecure"
+    - "traefik.http.routers.prom.tls.certresolver=letsencrypt"
+    - "traefik.http.routers.prom.priority=90"
+    - "traefik.http.routers.prom.middlewares=prom-auth,prom-ip"
+    - "traefik.http.middlewares.prom-auth.basicauth.users=${BASIC_AUTH_USERS}"
+    - "traefik.http.middlewares.prom-ip.ipallowlist.sourcerange=${IP_WHITELIST}"
+    - "traefik.http.services.prom.loadbalancer.server.port=9090"
+    networks:
+      - internal
+      - proxy
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    env_file: [.env]
+    expose:
+      - "9093"
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--web.route-prefix=/alert"
+      - "--web.external-url=https://${DOMAIN}/alert"
+      - "--storage.path=/alertmanager"
+    volumes:
+      - ./prometheus/generated/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.alert.rule=Host(`${DOMAIN}`) && PathPrefix(`/alert`)"
+      - "traefik.http.routers.alert.entrypoints=websecure"
+      - "traefik.http.routers.alert.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.alert.priority=80"
+      - "traefik.http.routers.alert.middlewares=alert-auth,alert-ip"
+      - "traefik.http.middlewares.alert-auth.basicauth.users=${BASIC_AUTH_USERS}"
+      - "traefik.http.middlewares.alert-ip.ipallowlist.sourcerange=${IP_WHITELIST}"
+      - "traefik.http.services.alert.loadbalancer.server.port=9093"
+    networks:
+      - internal
+      - proxy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: pg-shortener
+    env_file: [.env]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-shortener
+    env_file: [.env]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+    expose:
+      - "6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - internal
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter
+    env_file: [.env]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "9187"
+    environment:
+      - DATA_SOURCE_NAME=${DATA_SOURCE_NAME}
+      - PG_EXPORTER_DISABLE_SETTINGS_METRICS=true
+    networks:
+      - internal
 
   node_exporter:
     image: prom/node-exporter:latest
     container_name: node_exporter
+    restart: unless-stopped
     network_mode: host
     pid: host
-    restart: unless-stopped
 
 networks:
   internal:
