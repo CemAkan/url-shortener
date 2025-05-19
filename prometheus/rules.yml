@@ -1,0 +1,75 @@
+groups:
+  - name: system_metrics
+    interval: 15s
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU > 80% for 5 minutes"
+          description: "Instance {{ $labels.instance }} CPU usage is {{ printf \"%.0f\" $value }}%"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RAM > 85% for 5 minutes"
+          description: "Instance {{ $labels.instance }} memory usage is {{ humanizePercentage $value }}"
+
+  - name: application_metrics
+    interval: 1m
+    rules:
+      - alert: HighRedirectLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="url-shortener"}[5m])) by (le)) > 1
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "95th percentile request latency > 1s"
+
+      - alert: LowRequestRate
+        expr: sum(rate(http_requests_total{job="url-shortener"}[60m])) < 100
+        for: 60m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Request rate < 100 req/s (60m)"
+
+      - alert: HighRequestRate
+        expr: sum(rate(http_requests_total{job="url-shortener"}[5m])) > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Request rate > 500 req/s (5m)"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis connection down"
+          description: "redis_up metric is {{ $value }}, Redis may be unreachable on instance {{ $labels.instance }}"
+
+      - alert: DatabaseDown
+        expr: db_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection down"
+          description: "db_up metric is {{ $value }}, database may be unreachable on instance {{ $labels.instance }}"
+
+      - alert: MailServiceDown
+        expr: mail_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mail service connection down"
+          description: "mail_up metric is {{ $value }}, SMTP may be unreachable on instance {{ $labels.instance }}"
