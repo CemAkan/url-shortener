@@ -15,6 +15,12 @@ func IPWhitelistMiddleware() fiber.Handler {
 
 	return func(c *fiber.Ctx) error {
 		ip := utils.GetClientIP(c)
+
+		if ip == "" {
+			logger.Log.Warn("No client IP could be determined")
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "forbidden"})
+		}
+
 		for _, allowed := range allowedIPs {
 			if strings.TrimSpace(ip) == strings.TrimSpace(allowed) {
 				return c.Next()
