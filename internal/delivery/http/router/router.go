@@ -43,7 +43,7 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *h
 	api := app.Group("/api")
 
 	//mail assets
-	api.Static("/assets", "app/email/assets")
+	api.Static("/assets", "./email/assets")
 
 	//health
 	api.Get("/health", handler.Health)
