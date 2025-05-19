@@ -1,38 +1,33 @@
 # ---------- Stage 1: Build ----------
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
-# Install git, ca-certificates
 RUN apk add --no-cache git ca-certificates
 
-# Set working directory
 WORKDIR /app
 
-# Copy go.mod and download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy source code
 COPY . .
 
-COPY .env /app/.env
-
-# Copy assets
+# Copy assets explicitly (optional since COPY . . includes it)
 COPY ./email/assets /app/email/assets
 
-# Build binary
-RUN go build -o url-shortener ./cmd/main.go
+RUN go build -o url-shortener ./cmd/app/main.go
 
 # ---------- Stage 2: Run ----------
 FROM alpine:latest
 
-# Install ca-certificates
 RUN apk add --no-cache ca-certificates
 
-# Copy built binary
-COPY --from=builder /app/url-shortener /url-shortener
+WORKDIR /app
 
-# Expose port
+# Copy binary
+COPY --from=builder /app/url-shortener /app/url-shortener
+
+# Copy email assets
+COPY --from=builder /app/email/assets /app/email/assets
+
 EXPOSE 3000
 
-# Start the app
-ENTRYPOINT ["/url-shortener"]
+ENTRYPOINT ["/app/url-shortener"]
