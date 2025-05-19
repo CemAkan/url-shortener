@@ -1,126 +1,97 @@
-version: "3.9"
-
 services:
-  # Go application container
   app:
     build: .
+    image: url-shortener-app
     container_name: url-shortener
-    env_file:
-      - .env                                             # Load environment variables
-    ports:
-      - "${APP_PORT}:3000"                               # Map host APP_PORT to container port 3000
-    networks:
-      - proxy                                            # External-facing network
-      - internal                                         # Internal services network
+    env_file: [.env]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.shortener.rule=Host(`cemakan.com.tr`)"
+      - "traefik.http.routers.shortener.entrypoints=websecure"
+      - "traefik.http.routers.shortener.tls.certresolver=letsencrypt"
+      - "traefik.http.services.shortener.loadbalancer.server.port=3000"
+    networks: [internal, proxy]
     depends_on:
-      - postgres
-      - redis
+      postgres: {condition: service_healthy}
+      redis:    {condition: service_healthy}
 
-  # PostgreSQL database
   postgres:
     image: postgres:16-alpine
     container_name: pg-shortener
-    env_file:
-      - .env                                             # DB_USER, DB_PASSWORD, DB_NAME, DB_PORT
-    ports:
-      - "${DB_PORT}:5432"                                # Map host DB_PORT to container port 5432
-    volumes:
-      - pgdata:/var/lib/postgresql/data                  # Persist database files
+    env_file: [.env]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER"]
+      interval: 5s
+      retries: 10
+    networks: [internal]
 
-  # Redis cache
   redis:
     image: redis:7-alpine
     container_name: redis-shortener
-    ports:
-      - "6379:6379"                                      # Standard Redis port
-    volumes:
-      - redisdata:/data                                  # Persist Redis data
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD","redis-cli","ping"]
+      interval: 5s
+      retries: 10
+    networks: [internal]
 
-  # Prometheus server
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
-    env_file:
-      - .env                                             # ALERT_LOW_REQ_RATE, ALERT_HIGH_REQ_RATE if used in templating
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro   # Main Prometheus config
-      - ./prometheus/rules.tmpl.yml:/etc/prometheus/rules.tmpl.yml:ro   # Templated alert rules
-      - prometheus_data:/prometheus                                  # Persist TSDB
-    ports:
-      - "${PROMETHEUS_PORT}:9090"                         # Expose Prometheus UI/API
-    command: >
-      sh -c "
-        envsubst < /etc/prometheus/rules.tmpl.yml > /etc/prometheus/rules.yml &&
-        exec prometheus \
-          --config.file=/etc/prometheus/prometheus.yml \
-          --rule.file=/etc/prometheus/rules.yml \
-          --storage.tsdb.path=/prometheus \
-          --web.enable-lifecycle
-      "
-    restart: unless-stopped
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-lifecycle
+    ports: ["${PROMETHEUS_PORT:-9090}:9090"]
+    networks: [internal]
 
-  # PostgreSQL exporter for Prometheus
-  postgres_exporter:
-    image: prometheuscommunity/postgres-exporter:latest
-    container_name: postgres_exporter
-    env_file:
-      - .env                                             # DATA_SOURCE_NAME built from DB_ vars
-    ports:
-      - "9187:9187"                                      # Exporter metrics port
-    depends_on:
-      - postgres
-    restart: unless-stopped
-
-  # Node exporter for host metrics
-  node_exporter:
-    image: prom/node-exporter:latest
-    container_name: node_exporter
-    network_mode: "host"                                 # Use host networking for system metrics
-    restart: unless-stopped
-
-  # Grafana dashboard
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    env_file:
-      - .env                                             # GF_SECURITY_ADMIN_USER/PASSWORD
-    ports:
-      - "${GRAFANA_PORT}:3000"                           # Expose Grafana UI
-    depends_on:
-      - prometheus
-    volumes:
-      - grafana_data:/var/lib/grafana                    # Persist Grafana data
-      - ./grafana/provisioning/:/etc/grafana/provisioning/  # Provision datasources & dashboards
-      - ./grafana/dashboards/:/etc/grafana/dashboards/
-    restart: unless-stopped
-
-  # Alertmanager for handling Prometheus alerts
   alertmanager:
     image: prom/alertmanager:latest
     container_name: alertmanager
-    env_file:
-      - .env                                             # SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, TEAM_EMAIL
     volumes:
-      - ./prometheus/alertmanager.tmpl.yml:/etc/alertmanager/alertmanager.tmpl.yml:ro  # Alertmanager template
-      - alertmanager_data:/alertmanager              # Persist silences & notifications
-    ports:
-      - "9093:9093"                                      # Expose Alertmanager UI/API
-    command: >
-      sh -c "
-        envsubst < /etc/alertmanager/alertmanager.tmpl.yml > /etc/alertmanager/alertmanager.yml &&
-        exec alertmanager \
-          --config.file=/etc/alertmanager/alertmanager.yml \
-          --storage.path=/alertmanager
-      "
+      - ./prometheus/generated/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports: ["9093:9093"]
+    networks: [internal]
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter
+    env_file: [.env]
+    environment:
+      PG_EXPORTER_DISABLE_SETTINGS_METRICS: "true"
+    ports: ["9187:9187"]
+    depends_on:
+      postgres: {condition: service_healthy}
+    networks: [internal]
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    env_file: [.env]
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports: ["${GRAFANA_PORT:-3001}:3000"]
+    depends_on: [prometheus]
+    networks: [internal, proxy]
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    network_mode: host
+    pid: host
     restart: unless-stopped
+
+networks:
+  internal:
+  proxy:
+    external: true
 
 volumes:
   pgdata:
   redisdata:
   prometheus_data:
   grafana_data:
-  alertmanager_data:
-
-networks:
-  proxy:                                               # External network (e.g., reverse proxy)
-  internal:                                            # Internal service-to-service network
