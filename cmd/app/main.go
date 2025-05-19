@@ -41,7 +41,7 @@ func main() {
 		ProxyHeader:           string(fiber.HeaderXForwardedFor),
 		ReadTimeout:           5 * time.Second,
 		WriteTimeout:          10 * time.Second,
-		TrustedProxies:        strings.Split(config.GetEnv("TRUST_PROXY_CIDR", ""), ","),
+		TrustedProxies:        strings.Split(config.GetEnv("TRUST_PROXY_IPS", "0.0.0.0/0"), ","),
 	})
 
 	// Dependency injection
