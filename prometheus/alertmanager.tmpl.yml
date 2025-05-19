@@ -1,19 +1,23 @@
 global:
+
   resolve_timeout: 5m
-  smtp_smarthost: '{{ env "SMTP_HOST" }}:{{ env "SMTP_PORT" }}'
-  smtp_from: '{{ env "SMTP_FROM" }}'
-  smtp_auth_username: '{{ env "SMTP_USER" }}'
-  smtp_auth_password: '{{ env "SMTP_PASS" }}'
+
+  smtp_smarthost:   '${SMTP_HOST}:${SMTP_PORT}'
+  smtp_from:        '${SMTP_FROM}'
+  smtp_auth_username: '${SMTP_USER}'
+  smtp_auth_password: '${SMTP_PASS}'
 
 route:
   receiver: 'team-email'
-  group_by: ['alertname','job']
+
   group_wait: 30s
+
   group_interval: 5m
-  repeat_interval: 1h
+
+  repeat_interval: 3h
 
 receivers:
   - name: 'team-email'
     email_configs:
-      - to: '{{ env "TEAM_EMAIL" }}'
+      - to: '${TEAM_EMAIL}'
         send_resolved: true
