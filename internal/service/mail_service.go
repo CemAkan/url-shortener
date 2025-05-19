@@ -42,7 +42,7 @@ func (s *mailService) SendVerificationMail(name, baseUrl, emailAddr, verifyLink 
 		Greeting:         fmt.Sprintf("Hello %s,", name),
 		Message:          mailVerificationMailSubject,
 		VerificationLink: verifyLink,
-		LogoURL:          baseUrl + "/api/assets/logo.svg",
+		LogoURL:          baseUrl + "/api/assets/logo.png",
 		HeaderURL:        baseUrl + "/api/assets/header.png",
 		ButtonText:       "✔️ Verify Your Mail",
 	})
@@ -60,7 +60,7 @@ func (s *mailService) SendPasswordResetMail(name, baseUrl, emailAddr, verifyLink
 		Greeting:         fmt.Sprintf("Hello %s,", name),
 		Message:          passwordResetMailSubject,
 		VerificationLink: verifyLink,
-		LogoURL:          baseUrl + "/api/assets/logo.svg",
+		LogoURL:          baseUrl + "/api/assets/logo.png",
 		HeaderURL:        baseUrl + "/api/assets/header.png",
 		ButtonText:       "🔄 Reset Password",
 	})
