@@ -1,6 +1,8 @@
 module github.com/CemAkan/url-shortener
 
-go 1.23.4
+go 1.23.0
+
+toolchain go1.23.4
 
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.9.1
