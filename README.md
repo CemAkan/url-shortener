@@ -1,160 +1,261 @@
 <!-- logo -->
 <p align="center">
-  <img src="email/assets/logo.png" alt="URL Shortener Logo"/>
+  <img src="email/assets/logo.png" alt="URL Shortener Logo" />
 </p>
 
-# URL Shortener API
+<h1 align="center">URL Shortener API</h1>
+<p align="center">
+  A production-grade, secure, and extensible backend for high-performance URL shortening.
+</p>
 
-A production-grade, extensible backend for URL shortening.  
-Designed for reliability, observability, and maintainability with Go, PostgreSQL, Redis, Prometheus, Grafana, Alertmanager, and Traefik.  
-No frontend included – this is a robust, scalable **service layer**.
+---
+
+## Overview
+
+URL Shortener is a containerized, enterprise-ready backend API for managing short URLs, built with Go and following clean architecture principles. It integrates PostgreSQL, Redis, Prometheus, Grafana, Alertmanager, and Traefik. The system emphasizes scalability, observability, security, and operational maintainability.
+
+This project includes no frontend. It is designed to be integrated into existing platforms (web, mobile, CLI) or to run as a dedicated microservice.
 
 ---
 
 ## Key Features
 
-- **Shorten URLs** with optional custom codes
-- **User registration, login, JWT authentication**
-- **Email verification** on signup, password reset with branded HTML email (with static images)
-- **Admin tools**: full user/URL management, only for admins
-- **Click batching:** Clicks stored in PostgreSQL until a threshold, then hot URLs (those with significant hits) are promoted to Redis for fast access; periodic "flusher job" moves counts back to DB and clears Redis.
-- **Rate limiting:** Per-IP, via Traefik, fully configurable
-- **Health job:** Scheduled background checks on database, Redis, mail; serves `/health` endpoint as JSON and feeds status to Prometheus (for alerting)
-- **Full monitoring/alerting:** Prometheus metrics, custom alert rules, dashboards (Grafana), email alerts (Alertmanager)
-- **Observalibity:** Each system (app, db, flusher, health, mail, server) logs to a separate file under `/logs`
-- **Strict security:** JWT Bearer auth, admin-only endpoints, IP whitelisting & Basic Auth for admin/metrics/dashboards
-- **Makefile** for local/devops convenience
-- **CI/CD out of the box** (GitHub Actions + Docker Hub auto-publish)
-- **Traefik-first:** Designed for containerized, HTTPS, and secure reverse proxy use
+- REST API for shortening URLs (with optional custom aliases)
+- Secure user registration, login, and JWT-based authentication
+- Email verification and password reset using branded HTML templates
+- Admin-only endpoints for managing users and URLs
+- Click batching system using PostgreSQL and Redis
+- Real-time health check API and periodic background health verifier
+- Per-IP rate limiting via Traefik middleware
+- Prometheus metrics and Grafana dashboards
+- Email alerts for system and application-level anomalies
+- Per-component structured logging
+- GitHub Actions-based CI/CD and Docker Hub deployment
+- Secure HTTPS routing using Traefik with automatic TLS
+
+---
+
+## Architecture
+
+| Component           | Description                                             |
+|--------------------|---------------------------------------------------------|
+| `url-shortener`     | Go-based REST API                                       |
+| `postgres`          | Persistent relational database                          |
+| `redis`             | Caching layer for hot URLs                              |
+| `prometheus`        | Metrics collection and alert rule engine                |
+| `grafana`           | Dashboard visualization                                 |
+| `alertmanager`      | Alert delivery engine (email notifications)             |
+| `node_exporter`     | Host-level metrics (CPU, RAM, Disk)                     |
+| `postgres_exporter` | PostgreSQL performance metrics for Prometheus           |
+| `traefik`           | HTTPS reverse proxy, rate limiter, and router           |
+
+All services are managed via Docker Compose and isolated with internal Docker networks.
 
 ---
 
 ## API Documentation
 
-- **OpenAPI/Swagger:**
-    - Auto-generated with [swaggo/swag](https://github.com/swaggo/swag)
-    - Available at [API Doc](https://cemakan.com.tr/api/docs/index.html)
-    - All endpoints, models, and authentication methods are fully documented
+The API is fully documented using Swagger (OpenAPI 3.0) via [swaggo/swag](https://github.com/swaggo/swag).
 
----
+**Live Docs:**  
+[API Swagger Live Documentation](https://cemakan.com.tr/api/docs/index.html)
 
-## Observability & Health System
-
-- **/health endpoint**: Returns live JSON with DB/Redis/Mail status (used by both users and Prometheus scraping)
-- **Health Job:** Background process regularly checks all core services (DB, Redis, Mail). If any fail, `/health` and Prometheus `*_up` metrics reflect this.
-- **Flusher job:** Periodically flushes click stats from Redis to PostgreSQL, deleting from Redis after successful DB write.
-    - Only URLs with real/hot traffic are promoted to Redis. Cold/rarely-hit links are fetched straight from PostgreSQL.
-- **Alerting (Prometheus + Alertmanager):**
-    - **System Alerts:** CPU > 80%/RAM > 85%, Redis/DB/Mail down
-    - **App Alerts:** Slow redirects, low/high request rate, flusher stalls
-    - **Alertmanager:** Sends notifications to configured email (`TEAM_EMAIL`)
-    - All alert rules and intervals are configurable via Prometheus rules files.
-- **Grafana Dashboards:**
-    - Only available to whitelisted IPs with Basic Auth
-    - Access at `/grafana` (see docker-compose and Traefik setup)
+The documentation includes:
+- All available endpoints and methods
+- Field schemas and validation rules
+- Authentication structure (JWT)
+- Example requests and responses
+- Error responses and status codes
 
 ---
 
 ## Security
 
-- **JWT Bearer token** for all protected endpoints
-- **IP whitelisting & Basic Auth** for:
-    - `/metrics`, `/api/docs`, `/grafana`, `/prometheus`, `/alert`
-- **Password hashing** and secure admin/user separation
-- **Admin seeding:** If no admin exists, a first one is auto-created from `.env` at boot
+- JWT Bearer tokens for all authenticated endpoints
+- IP allowlisting and Basic Auth for:
+  - `/metrics`
+  - `/grafana`
+  - `/prometheus`
+  - `/alert`
+  - `/api/docs`
+- Passwords stored using bcrypt hashing
+- Auto-seeding of an admin account on first launch if none exists
+- All traffic securely routed via Traefik with TLS (Let's Encrypt or manual certs)
 
 ---
 
-## Automation & DevOps
+## Monitoring & Health
 
-- **CI/CD:**
-    - Build, test, and publish Docker images to [Docker Hub](https://hub.docker.com/r/cemakan/url-shortener) via GitHub Actions
-    - See `.github/workflows/ci-cd.yml`
-- **Makefile:**
-    - Fast local Docker, migration, and devops commands
-- **Traefik**: All routing, SSL, path-based access, rate limits via Traefik + ENV config
-- **Mail alerts:** Alertmanager triggers emails for critical events to your team
+- `/health` endpoint returns live JSON status of:
+  - PostgreSQL
+  - Redis
+  - SMTP
+- Background health checker runs periodically
+- Prometheus scrapes metrics from:
+  - Application
+  - Redis
+  - PostgreSQL
+  - Node exporter
+- Alertmanager triggers alerts via email based on thresholds or failures
+- Grafana dashboards provide visual monitoring for all systems
 
----
+### Default Alerts
 
-## Deployment & Requirements
-
-- **Docker Compose**:
-    - Includes everything: app, PostgreSQL, Redis, Prometheus, Grafana, Alertmanager, node/postgres exporters
-- **Requires:**
-    - External **SMTP server** for all email features (register, reset)
-    - **Traefik** as a reverse proxy (HTTPS, rate limiting, path-prefix)
-- **Example .env:**
-    - See `.env.example` for all required configuration
-
----
-
-## Project Structure
-
-- `cmd/`        — Application entrypoint
-- `config/`     — Environment and JWT config
-- `docs/`       — Swagger docs (auto-generated)
-- `email/`      — Email templates & static assets
-- `internal/`   — All core logic, handlers, middleware, domain, health, infrastructure, services
-- `logs/`       — Separate log files per subsystem
-- `prometheus/` — Prometheus and alert rules config
-- `traefik/`    — Example reverse proxy configs
-- `Makefile`, `docker-compose.yml`, etc.
+- CPU usage above 80%
+- Memory usage above 85%
+- Redis, PostgreSQL, or SMTP service down
+- API redirect latency degradation
+- Request throughput outside configured bounds
+- Flusher failure or unexpected idle time
 
 ---
 
-## API Quick Reference
+## API Endpoints
 
-- `POST   /api/register`         – Register (sends email confirmation)
-- `POST   /api/login`            – Obtain JWT token
-- `GET    /api/health`           – Health info (DB, Redis, Mail)
-- `POST   /api/shorten`          – Shorten a URL (auth required)
-- `GET    /api/me`               – User info (auth required)
-- `GET    /api/my/urls`          – All user URLs (auth required)
-- `GET    /api/{code}`           – Redirect by code (public)
-- `GET    /api/docs/index.html`  – Full API reference
-- `GET    /api/admin/users`      – List users (admin only)
-- `DELETE /api/admin/users/{id}` – Remove user (admin only)
-
-**Admin only:**
-- `GET    /admin/users`
-- `DELETE /admin/users/{id}`
+| Method | Endpoint                    | Access        | Description                              |
+|--------|-----------------------------|---------------|------------------------------------------|
+| POST   | `/api/register`             | Public        | Register a new user                      |
+| POST   | `/api/login`                | Public        | Obtain JWT access token                  |
+| GET    | `/api/me`                   | Authenticated | Retrieve logged-in user profile          |
+| POST   | `/api/shorten`              | Authenticated | Create a new shortened URL               |
+| GET    | `/api/{code}`               | Public        | Resolve and redirect from short code     |
+| GET    | `/api/my/urls`              | Authenticated | List URLs created by the current user    |
+| GET    | `/api/admin/users`          | Admin Only    | List all registered users                |
+| DELETE | `/api/admin/users/{id}`     | Admin Only    | Remove user by ID                        |
+| GET    | `/api/docs/index.html`      | Protected     | View full API documentation              |
+| GET    | `/health`                   | Public        | Get real-time system health report       |
 
 ---
 
-## Monitoring & Alerting
+## Reverse Proxy & Routing
 
-- **System Metrics:**
-    - CPU, memory, disk, container health
-    - Redis/DB/Mail up/down status
-- **Application Metrics:**
-    - Click rates, 95th percentile redirect latency, request rates
-    - Flusher job health (clicks flushed, failure count, stalls)
-- **Alerts:**
-    - Configurable in `prometheus/rules.yml`
-    - Mail notifications via Alertmanager (configurable in `.env`)
-- **Grafana Dashboards:**
-    - Visualize all metrics (protected by Basic Auth + IP whitelist)
+All routes are proxied securely via Traefik with rate limiting and middleware protections.
+
+| Path Prefix     | Destination        | Access Protection            |
+|-----------------|--------------------|------------------------------|
+| `/api`          | url-shortener      | JWT-based, rate limited      |
+| `/grafana`      | grafana            | IP allowlist + Basic Auth    |
+| `/prometheus`   | prometheus         | IP allowlist + Basic Auth    |
+| `/alert`        | alertmanager       | IP allowlist + Basic Auth    |
+| `/metrics`      | exporters + app    | IP allowlist + Basic Auth    |
+| `/health`       | url-shortener      | Public                       |
+
+Rate limit settings are configured in `.env` and applied via Traefik middlewares.
 
 ---
 
-## Usage
+## File & Folder Structure
 
-### 1. Clone & configure
+| Path                  | Description                                    |
+|-----------------------|------------------------------------------------|
+| `cmd/`                | Application entrypoint                         |
+| `config/`             | Configuration loading (env, JWT, SMTP, etc.)  |
+| `internal/`           | Business logic, services, handlers             |
+| `email/`              | Static HTML templates and assets               |
+| `docs/`               | Auto-generated Swagger specs                   |
+| `prometheus/`         | Alerting rules and scrape configs              |
+| `traefik/`            | Traefik dynamic config (middlewares, routers)  |
+| `logs/`               | Per-component log output                       |
+| `Makefile`            | DevOps helper commands                         |
+| `.env.example`        | Sample environment configuration               |
+| `docker-compose.yml`  | Orchestration for all services                 |
 
-```sh
+---
+
+## Deployment Requirements
+
+- Docker Engine 20.10+
+- Docker Compose v2.20+
+- Public domain name (e.g. `cemakan.com.tr`)
+- SMTP credentials (username/password)
+- Public access to port 443 for Let’s Encrypt TLS
+
+---
+
+## Deployment Steps
+
+```bash
 git clone https://github.com/CemAkan/url-shortener.git
 cd url-shortener
+
 cp .env.example .env
-# Edit .env with your DB, Redis, SMTP, JWT, admin, etc.
+nano .env  # configure DB, Redis, JWT_SECRET, SMTP, etc.
+
+docker compose up -d --build
 ```
 
-# TODO
 
-- [ ] QR code support for short links
-- [ ] User-selectable cache/flush policy (.env switch)
-- [ ] “Cold” URL Redis eviction tuning
-- [ ] Self-service API keys & integrations
-- [ ] More admin tools & exports
-- [ ] Optional “delayed flush” for burst traffic
-  
+---
+
+## Accessible Routes After Deployment
+
+| Service            | URL                                     |
+|--------------------|------------------------------------------|
+| API                | `https://yourdomain.com/api`             |
+| Swagger Docs       | `https://yourdomain.com/api/docs`        |
+| Metrics            | `https://yourdomain.com/metrics`         |
+| Grafana Dashboard  | `https://yourdomain.com/grafana`         |
+| Prometheus UI      | `https://yourdomain.com/prometheus`      |
+| Alertmanager       | `https://yourdomain.com/alert`           |
+| Healthcheck        | `https://yourdomain.com/health`          |
+
+---
+
+## CI/CD & Automation
+
+- **GitHub Actions**:
+  - On every push, Docker images are automatically built, tested, and published.
+- **Docker Image**:
+  - Available at [`cemakan/url-shortener`](https://hub.docker.com/r/cemakan/url-shortener)
+- **Makefile Features**:
+  - Local testing utilities
+  - Database migration automation
+  - Service cleanup routines
+  - Centralized log rotation/archive commands
+- **Log Structure**:
+  - Logs are stored in `/logs/{component}.log`, organized per subsystem.
+
+---
+
+## 📝 Project Goals
+
+| Feature                                  | Status |
+|------------------------------------------|--------|
+| Full API with JWT and Admin Role         | ✅     |
+| SMTP Email Verification                  | ✅     |
+| Redis Click Cache                        | ✅     |
+| Prometheus Monitoring                    | ✅     |
+| Grafana Dashboards                       | ✅     |
+| Alertmanager Email Alerts                | ✅     |
+| Rate Limiting via Traefik Middleware     | ✅     |
+| IP Whitelist & Basic Auth                | ✅     |
+| Healthcheck Endpoint & Verifier Job      | ✅     |
+| CI/CD with GitHub Actions & Docker Hub   | ✅     |
+| Per-component Log Architecture           | ✅     |
+| QR Code Support for Short URLs           | ⏳     |
+| Delayed Cache Flushing Strategy          | ⏳     |
+| Self-service API Key Management          | ⏳     |
+| CSV Export for Admin Panels              | ⏳     |
+| Multi-tenant Domain Routing Support      | ⏳     |
+| Role-based Access Control (RBAC)         | ⏳     |
+| Cold Key Eviction (LRU/TTL in Redis)     | ⏳     |
+| Real-time Click Analytics Visualization  | ⏳     |
+
+> ✅ Implemented  ⏳ Planned/In Progress
+---
+
+## License
+
+This project is licensed under the **MIT License**.  
+See the [LICENSE](./LICENSE) file for complete details.
+
+---
+
+## Maintainer
+
+**Cem Akan**  
+Docker Hub: [cemakan/url-shortener](https://hub.docker.com/r/cemakan/url-shortener)
+
+For contributions, feature requests, or bug reports, please [open an issue](https://github.com/CemAkan/url-shortener/issues) or submit a pull request via GitHub.
+
+---
