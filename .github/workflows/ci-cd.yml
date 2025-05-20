@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "dev", "main" ]
+    branches: [ "prod" ]
   pull_request:
-    branches: [ "dev", "main" ]
+    branches: [ "prod" ]
 
 env:
   DOCKER_IMAGE: cemakan/url-shortener
@@ -30,18 +30,15 @@ jobs:
           username: "cemakan"
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Docker image with dev tag
-        run: |
-          docker build -t $DOCKER_IMAGE:dev .
-
-      - name: Build and push latest image (main branch only)
-        if: github.ref == 'refs/heads/main'
+      - name: Build Docker image with prod tag
         run: |
           docker build -t $DOCKER_IMAGE:latest .
+
+      - name: Push Docker image
+        run: |
           docker push $DOCKER_IMAGE:latest
 
   deploy:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build-and-test
     steps:
