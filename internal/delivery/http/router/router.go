@@ -36,10 +36,6 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *h
 	app.Use(middleware.RequestLogger())
 
 	// -- public routes (no need jwt) --
-
-	//redirect
-	app.Get("/:code", urlHandler.Redirect)
-
 	api := app.Group("/api")
 
 	//mail assets
@@ -75,4 +71,7 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, urlHandler *h
 
 	adminGroup.Get("/users", adminHandler.ListUsers)
 	adminGroup.Delete("/users/:id", adminHandler.RemoveUser)
+
+	//redirect
+	api.Get("/:code", urlHandler.Redirect)
 }
