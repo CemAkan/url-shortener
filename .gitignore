@@ -34,7 +34,3 @@ Thumbs.db
 # IDE/editor folders
 .idea/
 .vscode/
-
-# swagger auto-generate files
-/docs/*
-!/docs/.gitkeep
