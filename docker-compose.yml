@@ -10,6 +10,12 @@ services:
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.api.priority=10"
       - "traefik.http.services.api.loadbalancer.server.port=${APP_PORT}"
+
+      # --- Rate limit middleware ---
+      - "traefik.http.middlewares.api-rate-limit.ratelimit.average=1"
+      - "traefik.http.middlewares.api-rate-limit.ratelimit.period=3s"
+      - "traefik.http.middlewares.api-rate-limit.ratelimit.burst=1"
+      - "traefik.http.routers.api.middlewares=api-rate-limit"
     expose:
       - "${APP_PORT}"
     depends_on:
