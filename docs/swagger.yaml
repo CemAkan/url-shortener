@@ -1,0 +1,569 @@
+basePath: /api
+definitions:
+  entity.URL:
+    properties:
+      code:
+        type: string
+      original_url:
+        type: string
+      total_clicks:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  entity.User:
+    properties:
+      email:
+        type: string
+      is_admin:
+        type: boolean
+      is_verified:
+        type: boolean
+      name:
+        type: string
+      surname:
+        type: string
+    type: object
+  request.AuthRequest:
+    properties:
+      email:
+        example: asko@kusko.com
+        type: string
+      name:
+        example: Cem
+        type: string
+      password:
+        example: supersecret
+        minLength: 8
+        type: string
+      surname:
+        example: Akan
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  request.NewPassword:
+    properties:
+      password:
+        example: newsecurepassword
+        type: string
+    type: object
+  request.ShortenURLRequest:
+    properties:
+      custom_code:
+        example: custom123
+        type: string
+      original_url:
+        example: https://google.com
+        type: string
+    type: object
+  request.UpdateURLRequest:
+    properties:
+      new_custom_code:
+        example: newcode123
+        type: string
+      new_original_url:
+        example: https://updated.com
+        type: string
+    type: object
+  response.DetailedURLResponse:
+    properties:
+      code:
+        example: abc123
+        type: string
+      daily_clicks:
+        example: 10
+        type: integer
+      original_url:
+        example: https://google.com
+        type: string
+      total_clicks:
+        example: 42
+        type: integer
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        example: invalid credentials
+        type: string
+    type: object
+  response.HealthStatusResponse:
+    properties:
+      database:
+        allOf:
+        - $ref: '#/definitions/response.Status'
+        example: healthy
+      email:
+        allOf:
+        - $ref: '#/definitions/response.Status'
+        example: healthy
+      redis:
+        allOf:
+        - $ref: '#/definitions/response.Status'
+        example: healthy
+      status:
+        allOf:
+        - $ref: '#/definitions/response.Status'
+        example: healthy
+    type: object
+  response.LoginResponse:
+    properties:
+      email:
+        example: asko@kusko.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  response.Status:
+    enum:
+    - healthy
+    - degraded
+    - unhealthy
+    type: string
+    x-enum-varnames:
+    - StatusHealthy
+    - StatusDegraded
+    - StatusUnhealthy
+  response.SuccessResponse:
+    properties:
+      success:
+        example: Operation successful
+        type: string
+    type: object
+  response.URLResponse:
+    properties:
+      code:
+        example: abc123
+        type: string
+      original_url:
+        example: https://google.com
+        type: string
+      short_url:
+        example: https://localhost/abc123
+        type: string
+    type: object
+  response.UserResponse:
+    properties:
+      email:
+        example: asko@kusko.com
+        type: string
+      id:
+        example: 1
+        type: integer
+    type: object
+  response.UserURLsResponse:
+    properties:
+      urls:
+        items:
+          $ref: '#/definitions/entity.URL'
+        type: array
+      user:
+        $ref: '#/definitions/entity.User'
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Enterprise grade URL shortening service.
+  title: URL Shortener API
+  version: "1.0"
+paths:
+  /{code}:
+    get:
+      description: Redirects to original URL based on short code
+      parameters:
+      - description: Short URL code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "302":
+          description: Redirects to original URL
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Redirect short URL to original URL
+      tags:
+      - URL
+  /admin/users:
+    get:
+      description: Retrieves all users with their associated short URLs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.UserURLsResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List all users and their URLs
+      tags:
+      - Admin
+  /admin/users/{id}:
+    delete:
+      description: Deletes a user by ID and all associated short URLs & Redis entries
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a user and all related URLs
+      tags:
+      - Admin
+  /health:
+    get:
+      description: Returns current health status of DB, Redis and Email services
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.HealthStatusResponse'
+      summary: Health Check
+      tags:
+      - Health
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns JWT token
+      parameters:
+      - description: User Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: User Login
+      tags:
+      - Auth
+  /me:
+    get:
+      description: Returns authenticated user's profile info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user's profile
+      tags:
+      - Auth
+  /my/urls:
+    get:
+      description: Retrieves all shortened URLs for authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.URLResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user's URLs
+      tags:
+      - URL
+  /my/urls/{code}:
+    delete:
+      description: Deletes a user's shortened URL by code
+      parameters:
+      - description: Short URL code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a shortened URL
+      tags:
+      - URL
+    get:
+      description: Retrieves a single short URL details with daily click count
+      parameters:
+      - description: Short URL code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.DetailedURLResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a single URL detail
+      tags:
+      - URL
+    patch:
+      consumes:
+      - application/json
+      description: Updates original URL or custom code for a user's URL
+      parameters:
+      - description: Short URL code
+        in: path
+        name: code
+        required: true
+        type: string
+      - description: Updated URL info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a shortened URL
+      tags:
+      - URL
+  /password/reset:
+    get:
+      description: Sends password reset link to user's email
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Send password reset mail
+      tags:
+      - Auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account
+      parameters:
+      - description: User Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: User Registration
+      tags:
+      - Auth
+  /shorten:
+    post:
+      consumes:
+      - application/json
+      description: Create a shortened URL with optional custom code
+      parameters:
+      - description: URL to shorten
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ShortenURLRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.URLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Shorten a URL
+      tags:
+      - URL
+  /verify/mail/{token}:
+    get:
+      description: Validates email address through verification token
+      parameters:
+      - description: Verification Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Verify user's email address
+      tags:
+      - Verification
+  /verify/password:
+    post:
+      consumes:
+      - application/json
+      description: Sets new password after token verification
+      parameters:
+      - description: New Password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.NewPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Reset user password with verification token
+      tags:
+      - Verification
+  /verify/password/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Sets new password after token verification
+      parameters:
+      - description: Verification Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+      summary: Return verification token to use reset user password
+      tags:
+      - Verification
+swagger: "2.0"
