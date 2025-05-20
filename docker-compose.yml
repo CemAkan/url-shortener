@@ -1,6 +1,6 @@
 services:
   app:
-    build: .
+    image: cemakan/url-shortener:latest
     container_name: shortener
     env_file: [.env]
     labels:
