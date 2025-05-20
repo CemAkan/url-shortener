@@ -52,7 +52,7 @@ jobs:
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           port: 22
-          command: |
+          script: |
             cd /opt/app/shortener
             docker compose pull
             docker compose up -d
