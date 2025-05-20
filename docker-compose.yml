@@ -1,7 +1,7 @@
 services:
   app:
     image: cemakan/url-shortener:latest
-    container_name: shortener
+    container_name: url-shortener
     env_file: [.env]
     labels:
       - "traefik.enable=true"
