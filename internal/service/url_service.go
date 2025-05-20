@@ -39,19 +39,25 @@ func (s *urlService) Shorten(originalURL string, userID uint, customCode *string
 	var code string
 
 	if customCode != nil && *customCode != "" {
-		isTaken := s.isCodeTaken(*customCode)
+
+		code = strings.TrimSpace(*customCode)
+
+		if utils.IsReservedCode(code) {
+			return nil, errors.New("custom code is reserved and cannot be used")
+		}
+
+		isTaken := s.isCodeTaken(code)
 
 		if isTaken {
 			return nil, errors.New("custom code already taken")
 		}
-		code = *customCode
 	} else {
-		code = s.generateUniqueCode()
-	}
 
-	// if it is api/* or api, generate it
-	if strings.Contains(code, "api/") || code == "api" || code == "metrics" {
 		code = s.generateUniqueCode()
+
+		if utils.IsReservedCode(code) {
+			code = s.generateUniqueCode()
+		}
 	}
 
 	url := &entity.URL{
