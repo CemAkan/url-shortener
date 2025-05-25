@@ -3,6 +3,8 @@ services:
     image: cemakan/url-shortener:latest
     container_name: url-shortener
     env_file: [.env]
+    volumes:
+      - ./.env:/.env:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
@@ -82,19 +84,38 @@ services:
       - internal
       - proxy
 
+  config-renderer:
+    image: alpine:3.18
+    env_file:
+      - .env
+    entrypoint:
+      - sh
+      - -c
+      - |
+        apk add --no-cache gettext \
+        && envsubst < /templates/alertmanager.tmpl.yml > /data/alertmanager.yml
+    volumes:
+      - ./prometheus/alertmanager/alertmanager.tmpl.yml:/templates/alertmanager.tmpl.yml:ro
+      - ./prometheus/alertmanager:/data
+    restart: 'no'
+
   alertmanager:
     image: prom/alertmanager:latest
     container_name: alertmanager
+    restart: on-failure
     env_file: [.env]
     expose:
       - "9093"
+    depends_on:
+      - config-renderer
+    volumes:
+      - ./prometheus/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
       - "--web.route-prefix=/alert"
       - "--web.external-url=https://${DOMAIN}/alert"
       - "--storage.path=/alertmanager"
-    volumes:
-      - ./prometheus/generated/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.alert.rule=Host(`${DOMAIN}`) && PathPrefix(`/alert`)"
@@ -173,3 +194,4 @@ volumes:
   redisdata:
   prometheus_data:
   grafana_data:
+  alertmanager_data:

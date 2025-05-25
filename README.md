@@ -181,6 +181,8 @@ cd url-shortener
 cp .env.example .env
 nano .env  # configure DB, Redis, JWT_SECRET, SMTP, etc.
 
+# No need to manually generate alertmanager.yml. It is auto-rendered at container startup.
+
 docker compose up -d --build
 ```
 
@@ -219,27 +221,27 @@ docker compose up -d --build
 
 ## 📝 Project Goals
 
-| Feature                                  | Status |
-|------------------------------------------|--------|
-| Full API with JWT and Admin Role         | ✅     |
-| SMTP Email Verification                  | ✅     |
-| Redis Click Cache                        | ✅     |
-| Prometheus Monitoring                    | ✅     |
-| Grafana Dashboards                       | ✅     |
-| Alertmanager Email Alerts                | ✅     |
-| Rate Limiting via Traefik Middleware     | ✅     |
-| IP Whitelist & Basic Auth                | ✅     |
-| Healthcheck Endpoint & Verifier Job      | ✅     |
-| CI/CD with GitHub Actions & Docker Hub   | ✅     |
-| Per-component Log Architecture           | ✅     |
-| QR Code Support for Short URLs           | ⏳     |
-| Delayed Cache Flushing Strategy          | ⏳     |
-| Self-service API Key Management          | ⏳     |
-| CSV Export for Admin Panels              | ⏳     |
-| Multi-tenant Domain Routing Support      | ⏳     |
-| Role-based Access Control (RBAC)         | ⏳     |
-| Cold Key Eviction (LRU/TTL in Redis)     | ⏳     |
-| Real-time Click Analytics Visualization  | ⏳     |
+| Feature                                 | Status |
+|-----------------------------------------|--------|
+| Full API with JWT and Admin Role        | ✅     |
+| SMTP Email Verification                 | ✅     |
+| Redis Click Cache                       | ✅     |
+| Prometheus Monitoring                   | ✅     |
+| Grafana Dashboards                      | ✅     |
+| Alertmanager Email Alerts               | ✅     |
+| Rate Limiting via Traefik Middleware    | ✅     |
+| IP Whitelist & Basic Auth               | ✅     |
+| Healthcheck Endpoint & Verifier Job     | ✅     |
+| CI/CD with GitHub Actions & Docker Hub  | ✅     |
+| Per-component Log Architecture          | ✅     |
+| QR Code Support for Short URLs          | ⏳     |
+| Slack & Telegram-Bot Alert Integrations | ⏳     |
+| Self-service API Key Management         | ⏳     |
+| CSV Export for Admin Panels             | ⏳     |
+| Multi-tenant Domain Routing Support     | ⏳     |
+| Role-based Access Control (RBAC)        | ⏳     |
+| Geo-based Redirect Rules                | ⏳     |
+| Delayed Cache Flushing Strategy         | ⏳     |
 
 > ✅ Implemented  ⏳ Planned/In Progress
 ---

@@ -1,18 +1,10 @@
 SHELL := /bin/bash
 
-AL_TMPL  := prometheus/alertmanager.tmpl.yml
-AL_OUT   := prometheus/generated/alertmanager.yml
-
 COMPOSE  := docker compose
 
-.PHONY: render build up down restart logs prune
+.PHONY: build up down restart logs prune
 
-render:
-        @mkdir -p $(dir $(AL_OUT))
-        @set -a; source ./.env; set +a; \
-         envsubst < $(AL_TMPL) > $(AL_OUT)
-
-up: render
+up:
         $(COMPOSE) up -d
 
 down:
